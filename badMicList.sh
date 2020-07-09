@@ -1,26 +1,23 @@
 #!/bin/bash
 #
-#-----------------------------------------------------------------------------
-#script to remove bad images from data sets collected on the stanley Krios 
+###########################################################################################
+# Script to curate and remove bad images from aligned averages of EM movies
 #
-#The data should have been processed with Focus and the Export directory should 
-#contain two folders: alignaver and ctfinfo 
+# Using IMOD functions, all micrographs will be loaded into memory to view via 3dmod 
 #
-#This script will analyse the summed images in the alignaver folder which have 
-#not been dose weighted
+# The script will state what to do when necessary in the 3dmod interface to mark bad images
 #
-#A list of bad images will be produced which will then remove all files or 
-#folders associated with these numbers. 
+# A list of bad images will be produced which can then be used to remove all files or 
+# directories associated with these images using a 'for loop' over the names. 
 #
 #
 #
-#To run script, copy this file to the directory containing alignaver and ctfinfo and check execution permissions
+# To run script, simply execute in the directory containing the aligned .mrc files
 #
-#Run script by typing ./remove_bad_images.com
 #
-#----------------------------------------------------------------------------
+###########################################################################################
 
-#Edited by tlaughlin 2017-05-22 to ignore DW and log files
+
 ls -rt *.mrc > filenames.txt
 filenames=(`cat filenames.txt`)
 
