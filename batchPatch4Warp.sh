@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#
+#  WORK-IN-PROGRESS
 #####################################################################################
 #
 # Author(s): Tom Laughlin, Digvjay Singh, Vinson Lam
@@ -39,8 +39,8 @@ usage ()
 	echo "-i: Path to Warp's imod directory 				(required)"
 	echo ""
 	echo "-a: Path to accessories files 					(optional)"
-	echo "-d: Name of .adoc template file in accessories	(optional)"
-	echo "-t: Excluded-view mean-intensity threshold 		(optional, default=7)"
+	echo "-d: Name of .adoc template file in accessories			(optional)"
+	echo "-t: Excluded-view mean-intensity threshold 			(optional, default=7)"
 	echo "-r: Target residual for alignment					(optional, default=0.5)"
 	echo "-m: Minimum number of tracked points 				(optional, default=7)"
 	exit 0
