@@ -46,70 +46,72 @@ usage ()
 	exit 0
 }
 
-#grab command-line arguements
+# Grab command-line arguements
 while getopts ":i:a::d::t::r::m::" options; do
+
     case "${options}" in
+
         i)
-			if [[ -d ${OPTARG} ]]
+	    if [[ -d ${OPTARG} ]] ; then
            		imodDirectory=${OPTARG}
-           	else
+            else
            		echo ""
            		echo "Fatal Error: Cannot find Warp's imod directory at specified location."
            		echo "Please check the specified path is correct!"
            		echo ""
            		usage
-           	fi
+            fi
             ;;
         a)
-            if [[ -d ${OPTARG} ]]
+            if [[ -d ${OPTARG} ]] ; then
            		accessories_path=${OPTARG}
-           	else
+            else
            		echo ""
            		echo "Error: Cannot find accessories directory at specified location."
            		echo "defaulting to use of ${accessories_path}"
            		echo ""
-           	fi
+            fi
             ;;
         d)
-            if [[ -f ${accessories_path}/${OPTARG} ]]
+            if [[ -f ${accessories_path}/${OPTARG} ]] ; then
            		adocTemplate=${OPTARG}
-           	else
+            else
            		echo ""
            		echo "Error: Cannot find .adoc template at specified location."
            		echo "defaulting to use of ${accessories_path}/${adocTemplate}"
            		echo ""
-           	fi
+	    fi
             ;;
         t)
-            if [[ ${OPTARG} =~ ^[0-9]+([.][0-9]+)?$ ]]
+            if [[ ${OPTARG} =~ ^[0-9]+([.][0-9]+)?$ ]] ; then
            		exclusionThresh=${OPTARG}
-           	else
+            else
            		echo ""
            		echo "Error: the excluded-view mean-intensity must be a number."
            		echo "defaulting to use of ${exclusionThresh}"
            		echo ""
-           	fi
+            fi
             ;;
         r)
-            if [[ ${OPTARG} =~ ^[0-9]+([.][0-9]+)?$ ]]
+            if [[ ${OPTARG} =~ ^[0-9]+([.][0-9]+)?$ ]] ; then
            		target_resid=${OPTARG}
-           	else
+            else
            		echo ""
            		echo "Error: the target alignment residual must be a number."
            		echo "defaulting to use of ${target_resid}"
            		echo ""
-           	fi
+            fi
             ;;
         m)
             if [[ ${OPTARG} =~ ^[0-9]+$ ]]
            		min_points=${OPTARG}
-           	else
+            else
            		echo ""
            		echo "Error: the minimum number of points must be an integer."
            		echo "defaulting to use of ${min_points}"
            		echo ""
-           	fi
-			;;
+            fi
+            ;;
         *)
             usage
             ;;
