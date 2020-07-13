@@ -50,18 +50,22 @@ else
 
 	"0")
 		fscType="fsc_masked"
+		firstFile="${fscType}_00.txt"
 		;;
 	"1")
 		fscType="fsc_unmasked"
+		firstFile="${fscType}_01.txt"
 		;;
 	
 	"2")
 		fscType="fsc_maskedtight"
+		firstFile="${fscType}_01.txt"
 		;;
        	
 	*)
 		echo "Input is not 0-2...defaulting to masked option"
 		fscType="fsc_masked"
+		firstFile="${fscType}_00.txt"
 		;;
 	esac	
 
@@ -69,37 +73,57 @@ else
   echo "***********************************************************************"
   echo "Plotting ${fscType}"
  
-  #check if a fsc file even exists
+  # Set output plot file name
+  outName="e2_${fscType}_by_iter.png"
+  
+   	# check if a fsc file even exists
 
-	if [[ ! -f ${fscType}_01.txt ]] ; then
+	if [[ ! -f ${firstFile} ]] ; then
 	
-		echo""
-		echo"Could not find ${fscType}_01.txt"
-		echo"Does not look like the first iteration has completed"
-		echo"exiting"
-		echo""
+		echo ""
+		echo "Could not find ${firstFile}"
+		echo "Does not look like the first iteration has completed"
+		echo "exiting"
+		echo ""
 
 		exit
 	fi
 	
-  #count number of iteraction to plot
+  # Count number of iteraction to plot
 
   fscIters=$(ls -l ${fscType}_*.txt | wc -l)
  
   echo "Found ${fscIters} of iterations to plot"
  
   echo "0	1" > ${fscType}_plottable.dat
-  cat ${fscType}_01.txt >> ${fscType}_plottable.dat	
+  cat ${firstFile} >> ${fscType}_plottable.dat	
 
-  #start combining data files
-  for (( i=2; i<=$fscIters; i++ ))
-  do
-	  j=$(printf "%02d" $i)
-	  echo "1" > tmp.dat
-	  cut -f 2 ${fscType}_${j}.txt >> tmp.dat 
-	  paste ${fscType}_plottable.dat tmp.dat > tmp2.dat
-	  mv tmp2.dat ${fscType}_plottable.dat 
-  done
+  # Start combining data files
+ 	if [[ $1 -eq 0 ]] ; then
+  		
+		for (( i=1; i<$fscIters; i++ ))
+  		do
+	  		j=$(printf "%02d" $i)
+	  		echo "1" > tmp.dat
+	  		cut -f 2 ${fscType}_${j}.txt >> tmp.dat 
+	  		paste ${fscType}_plottable.dat tmp.dat > tmp2.dat
+	  		mv tmp2.dat ${fscType}_plottable.dat 
+  		done
+		
+		offset="(i-2)"		
+
+	else
+  		for (( i=2; i<=$fscIters; i++ ))
+  		do
+	  		j=$(printf "%02d" $i)
+	  		echo "1" > tmp.dat
+	  		cut -f 2 ${fscType}_${j}.txt >> tmp.dat 
+	  		paste ${fscType}_plottable.dat tmp.dat > tmp2.dat
+	  		mv tmp2.dat ${fscType}_plottable.dat 
+  		done
+		
+		offset="(i-1)"
+	fi
 
   #tidy up
   rm tmp.dat || true
@@ -110,6 +134,8 @@ else
   echo ""
 
 fi
+
+
 #Gnu plot 
 
 gnuplot <<- EOF
@@ -119,16 +145,16 @@ set size ratio 0.6
 set border linewidth 2
 set tic scale 1
 
-set title "${fscType} by iteration"
-set xlabel "Resolution 1/A"
+set title "Half-map ${fscType} by iteration"
+set xlabel "Resolution (1/A)"
 set ylabel "FSC"
 
 set yrange [0:1.2]
 
 set key inside
 
-set output "e2_${fscType}_by_iter.png"
-plot for [i=2:$((fscIters+1))] "${fscType}_plottable.dat" using 1:i title 'Iter' .(i-1) with linespoints lw 2.5 pt 7 ps 0.5
+set output "${outName}"
+plot for [i=2:$((fscIters+1))] "${fscType}_plottable.dat" using 1:i title 'Iter_' .${offset} with linespoints lw 2.5 pt 7 ps 0.75
 EOF
 
-eog e2_${fscType}_by_iter.png &
+eog ${outName} &

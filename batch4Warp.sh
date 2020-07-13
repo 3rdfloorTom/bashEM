@@ -37,17 +37,16 @@ usage ()
 	echo ""
 	echo "-a: Path to accessories files 					(optional)"
 	echo "-d: Name of .adoc template files 					(optional)"
-	echo "-t: Excluded-view mean-intensity threshold 		(optional, default=7)"
+	echo "-t: Excluded-view mean-intensity threshold 			(optional, default=7)"
 	echo "-r: Target residual for alignment					(optional, default=0.5)"
 	echo "-m: Minimum number of tracked points 				(optional, default=7"
-	exit
+	exit 1
 }
 
-while getopts ":i:a:d:t:r:m:" options; do
+while getopts ":i:a::d::t::r::m::" options; do
     case "${options}" in
         i)
             imodDirectory=${OPTARG}
-            ((s == 45 || s == 90)) || usage
             ;;
         a)
             accessories_path=${OPTARG}
@@ -62,8 +61,8 @@ while getopts ":i:a:d:t:r:m:" options; do
             target_resid=${OPTARG}
             ;;
         m)
-			min_points=${OPTARG}
-			;;
+	    min_points=${OPTARG}
+	    ;;
         *)
             usage
             ;;
