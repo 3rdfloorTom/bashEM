@@ -130,8 +130,8 @@ if [[ -z "$(ls -A ${imodDirectory})" ]]; then
 else
 
 	# Make a logfile in the imod directory if it doesn't already exist
-	if ! [[ -f "${imodDirectory}"/imodAlign4warp ]]
-		echo "tilt-series	excluded-views	mean-residual	contour-count	outcome" > "${imodDirectory}"/batch4warp.log
+	if ! [[ -f "${imodDirectory}"/batchPatch4warp.log ]]
+		echo "tilt-series	excluded-views	mean-residual	contour-count	outcome" > "${imodDirectory}"/batchPatch4warp.log
 	fi
 
 	# Iterate through imod directory to perform automated patch tracking alignment
@@ -303,9 +303,9 @@ else
 		#write to logs
 		if (($remain_pts > $min_points))
 			echo "Alignment criterion: Residuals<${target_resid} Contours>${min_points} achieved!" > SUCCESS.log
-			echo "${ts_name}	${viewString}	${num}	${remain_pts}	SUCCESS" >>  "${imodDirectory}/imodAlign4warp.log"
+			echo "${ts_name}	${viewString}	${num}	${remain_pts}	SUCCESS" >>  "${imodDirectory}/batchPatch4warp.log"
 		else
-			echo "${ts_name}	${viewString}	${num}	${remain_pts}	FAIL" >>  "${imodDirectory}/imodAlign4warp.log"
+			echo "${ts_name}	${viewString}	${num}	${remain_pts}	FAIL" >>  "${imodDirectory}/batchPatch4warp.log"
 		fi
 
 		echo ""
@@ -318,7 +318,7 @@ else
 	done
 
 	 echo ""
-	 echo "The logfile for this run can be found here ${imodDirectory}/imodAlign4warp.log"
+	 echo "The logfile for this run can be found here ${imodDirectory}/batchPatch4warp.log"
 	 echo ""
 fi
 
