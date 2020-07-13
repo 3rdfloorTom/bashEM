@@ -30,7 +30,7 @@ echo "This will plot FSC curves for a specified iteraion"
 echo "Note: This script uses Eye Of Gnome to display the e2_FSCs_iter.png"
 echo "******************************************************************************************"
 
-iterNum=$1 ; iterName=$(printf "%02" $iterNum) #the iteration files are zero-padded to 2-digits...Don't know what happens at iter 100i
+iterNum=$1 ; iterName=$(printf "%02d" $iterNum) #the iteration files are zero-padded to 2-digits...Don't know what happens at iter 100i
 
 if [[ -z $1 ]] ; then 
   echo ""
@@ -85,8 +85,8 @@ else
 	
   
   echo "Found all the necessary files and will now collate the data"
- 
-  paste fsc_unmasked_${iterName}.txt fsc_masked_${iterName}.txt fsc_maskedtight_${iterName}.txt | cut -f 1,2,4,6 > FSCs_${iterName}_plottable.dat	
+  echo "0	1	1	1" > FSCs_${iterName}_plottable.dat
+  paste fsc_unmasked_${iterName}.txt fsc_masked_${iterName}.txt fsc_maskedtight_${iterName}.txt | cut -f 1,2,4,6 >> FSCs_${iterName}_plottable.dat	
   
  
 
@@ -105,7 +105,7 @@ set ylabel "FSC"
 set yrange [0:1.2]
 
 set term pngcairo size 900,400 font 'Helvetica,14'
-set term ratio 0.6
+set size ratio 0.6
 set border linewidth 2
 set tic scale 1
 set key top right
