@@ -163,7 +163,7 @@ else
 	 	# Get image stats for determing bad views using IMOD function
 	 	clip stats ${ts_name}.st >> stats.log 
 	 	sed -i -e '1,2d' \				# remove header lines
-	 		-e '$d' \					# remove bottom line
+	 		-e '$d' \				# remove bottom line
 	 		-e 's|)|    |g' \
 	 		-e 's|(|    |g' \
 			-e 's|,|    |g' "stats.log"
@@ -249,12 +249,12 @@ else
 		submfg prenewst.com
 
 		# Fiducial Model Generation (patch tracking)
-		makecomfile -root ${ts_name} -input xcorr.com -binning 2 -ou xcorr_pt.com -change ./DS_directive.adoc
+		makecomfile -root ${ts_name} -input xcorr.com -binning ${binBy} -ou xcorr_pt.com -change ./"${i}_directive.adoc"
 		submfg xcorr_pt.com
 
 		# Fine alignment (edit fiducial model)
 		line_number=$(grep -n "xfproduct" align.com|cut -d : -f 1)
-		sed -i "$[${line_number} + 4]i ScaleShifts 1.0,2.0" align.com #scaleshifts matches coarse aligned binning. here bin 2
+		sed -i "$[${line_number} + 4]i ScaleShifts 1.0,${binBy}" align.com #scaleshifts matches coarse aligned binning.
 		sed -i '/SeparateGroup/c\' align.com
 		submfg align.com
 
