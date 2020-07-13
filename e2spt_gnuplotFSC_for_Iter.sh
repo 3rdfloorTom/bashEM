@@ -98,8 +98,8 @@ else
 fi
 #Gnu plot 
 
-gnuplot <<- EOF
-set title "FSC plot: Iteration $iterNum"
+gnuplot	<<- EOF
+set title "FSC plot: Iteration ${iterName}"
 set xlabel "Resolution 1/A"
 set ylabel "FSC"
 set yrange [0:1.2]
@@ -122,7 +122,7 @@ set output "e2_FSCs_for_iter_${iterName}.png"
 
 plot "FSCs_${iterName}_plottable.dat" using 1:2 title ''.word(labels,1).'' with lines ls 2, \
      "FSCs_${iterName}_plottable.dat" using 1:3 title ''.word(labels,2).'' with lines ls 3, \
-     "FSCs_${iterName}_plottable.dat" using 1:4 title ''.word(labels,3).'' with lines ls 4, \
+     "FSCs_${iterName}_plottable.dat" using 1:4 title ''.word(labels,3).'' with lines ls 4
 EOF
 
 eog e2_FSCs_for_iter_${iterName}.png &
