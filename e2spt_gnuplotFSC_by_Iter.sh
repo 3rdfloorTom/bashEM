@@ -80,13 +80,18 @@ else
 
 	if [[ ! -f ${firstFile} ]] ; then
 	
-		echo ""
-		echo "Could not find ${firstFile}"
-		echo "Does not look like the first iteration has completed"
-		echo "exiting"
-		echo ""
+		if [[ -f "${fscType}_01.txt" ]] ; then
 
-		exit
+			firstFile="${fscType}_01.txt"		
+		else	
+			echo ""
+			echo "Could not find ${firstFile} or the next iteration"
+			echo "Does not look like the first iteration has completed"
+			echo "exiting"
+			echo ""
+
+			exit
+		fi
 	fi
 	
   # Count number of iteraction to plot
@@ -99,7 +104,7 @@ else
   cat ${firstFile} >> ${fscType}_plottable.dat	
 
   # Start combining data files
- 	if [[ $1 -eq 0 ]] ; then
+ 	if [[ $1 -eq 0 ]] && [[ -f "${fscType}_00.txt" ]] ; then
   		
 		for (( i=1; i<$fscIters; i++ ))
   		do
