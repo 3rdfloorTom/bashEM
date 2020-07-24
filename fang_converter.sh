@@ -43,11 +43,11 @@ while getopts ":p:b:r:f:" options; do
            	fi
             ;;
         b)
-            if [[ ${OPTARG} =~ ^[0-9]+([.][0-9]+)?$ ]] ; then
+            if [[ ${OPTARG} =~ ^[0-9]+$ ]] ; then
            		boxSize=${OPTARG}
            	else
            		echo ""
-           		echo "Error: box size must be a positive number."
+           		echo "Error: box size must be a positive integer."
            		echo ""
            		usage
            	fi
@@ -63,11 +63,11 @@ while getopts ":p:b:r:f:" options; do
            	fi
             ;;
         f)
-            if [[ ${OPTARG} =~ ^[0-9]+([.][0-9]+)?$ ]] ; then
+            if [[ ${OPTARG} =~ ^[0-9]+$ ]] ; then
            		resF=${OPTARG}
            	else
            		echo ""
-           		echo "Error: Fourier resolution must be an integer."
+           		echo "Error: Fourier pixel resolution must be an integer."
            		echo ""
            		usage
            	fi
