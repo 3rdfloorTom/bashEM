@@ -46,8 +46,13 @@ usage ()
 	exit 0
 }
 
+# If ran without arguements, display usage
+if [[ $# == 0 ]] ; then
+	usage
+fi
+
 # Grab command-line arguements
-while getopts ":i:a::d::t::r::m::" options; do
+while getopts ":i:a:d:t:r:m:" options; do
 
     case "${options}" in
 

@@ -26,8 +26,13 @@ usage ()
 	echo "	-r: Resolution in Angstroms		(optional, if -f provided)"
 	echo "	-f: Resolution in Fourier pixels	(optional, if -r provided)"
 	echo ""
-	exit
+	exit 0
 }
+
+# check for any arguements at all
+if [[ $# == 0 ]] ; then
+	usage
+fi
 
 #grab command-line arguements
 while getopts ":p:b:r:f:" options; do
@@ -146,4 +151,4 @@ else
 fi
 
 
-exit
+exit 1
