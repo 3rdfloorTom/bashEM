@@ -37,11 +37,11 @@ usage ()
 	echo "$(basename $0) -i input.ali -o outRootName -t tiltFile -x tiltFile -h thickness"
 	echo ""
 	echo "options list:"
-	echo "		-i: input aligned stack (.ali) file     (required)"
-	echo "		-o: rootname for output files (if different than input, e.g. 'volume01')     (optional)"
-	echo "		-t: tilt file (.tlt)     (required)"
-  echo "    -x: xtilt file (.xtlt) file     (required)"
-  echo "    -h: thickness in voxels     (optional, default is a generous 1500)"
+	echo "		-i: input aligned stack (.ali) file 						    (required)"
+	echo "		-o: rootname for output files (if different than input, e.g. 'volume01')    	    (optional)"
+	echo "		-t: tilt file (.tlt)    							    (required)"
+	echo "   		-x: xtilt file (.xtlt) file    							    (required)"
+  	echo "   		-h: thickness in voxels    							    (optional, default is a generous 1500)"
 	echo ""
 	exit 0
 }
@@ -56,13 +56,13 @@ while getopts ":i:o:t:x:h:" options; do
     case "${options}" in
         i)
             if [[ -f ${OPTARG} ]] ; then
-           		inFile=${OPTARG}
+           		inStack=${OPTARG}
            		echo ""
-           		echo "Found ${inStack}."
+           		echo "Found ${inStack}"
            		echo ""
            	else
            		echo ""
-           		echo "Error: Cannot find file named ${inStack}."
+           		echo "Error: Cannot find file named ${inStack}"
            		echo "exiting..."
            		echo ""
            		usage
@@ -74,11 +74,11 @@ while getopts ":i:o:t:x:h:" options; do
         t)
           if [[ -f ${OPTARG} ]] ; then
             tiltFile=${OPTARG}
-            echo""
-            echo"Found ${tiltFile}."
+            echo ""
+            echo "Found ${tiltFile}"
           else
             echo ""
-            echo "Error: Cannot find file named ${tiltFile}."
+            echo "Error: Cannot find file named ${tiltFile}"
             echo "exiting..."
             echo ""
             usage
@@ -87,11 +87,11 @@ while getopts ":i:o:t:x:h:" options; do
         x)
           if [[ -f ${OPTARG} ]] ; then
             xtiltFile=${OPTARG}
-            echo""
-            echo"Found ${xtiltFile}."
+            echo ""
+            echo "Found ${xtiltFile}"
           else
             echo ""
-            echo "Error: Cannot find file named ${xtiltFile}."
+            echo "Error: Cannot find file named ${xtiltFile}"
             echo "exiting..."
             echo ""
             usage
@@ -106,8 +106,8 @@ while getopts ":i:o:t:x:h:" options; do
            		echo "Using default value of 1500"
            		echo ""
            		
-              thickness = 1500
-
+        	      thickness = 1500
+	
            	fi
             ;;
         *)
@@ -120,9 +120,9 @@ shift "$((OPTIND-1))"
 # Make sure thickness is set or define default
 if [[ -z ${thickness} ]] ; then
   thickness = 1500
-  echo""
-  echo" Using default thickness:   ${thickness}"
-  echo""
+  echo ""
+  echo " Using default thickness:   ${thickness}"
+  echo ""
 fi
 
 # Check the optional inputs and set to defaults, if necessary
@@ -137,7 +137,7 @@ if [[ -z "$outRootName" ]] ; then
 fi
 
 # Make fulle output name
-outputName = ${outRootName}".rec"
+outputName=${outRootName}".rec"
 
 # Check if ouput file exists and back it up if so
 if [[ -f ${outputName} ]] ; then

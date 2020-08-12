@@ -36,10 +36,10 @@ usage ()
 	echo "$(basename $0) -i input.st -o outRootName -x transformsFile.xf -b binningFactor"
 	echo ""
 	echo "options list:"
-	echo "		-i: input stack (.st) file     (required)"
+	echo "		-i: input stack (.st) file    						     (required)"
 	echo "		-o: rootname for output files (if different than input, e.g. 'volume01')     (optional)"
-	echo "		-x: transforms file from etomo (.xf)     (required)"
-  echo "    -b: binning factor for output aligned stack (.ali) file     (optional, default is no binning)"
+	echo "		-x: transforms file from etomo (.xf) 					     (required)"
+	echo "   		-b: binning factor for output aligned stack (.ali) file  		     (optional, default is no binning)"
 	echo ""
 	exit 0
 }
@@ -54,13 +54,13 @@ while getopts ":i:o:x:b:" options; do
     case "${options}" in
         i)
             if [[ -f ${OPTARG} ]] ; then
-           		inFile=${OPTARG}
+           		inStack=${OPTARG}
            		echo ""
-           		echo "Found ${inStack}."
+           		echo "Found ${inStack}"
            		echo ""
            	else
            		echo ""
-           		echo "Error: Cannot find file named ${inStack}."
+           		echo "Error: Cannot find file named ${inStack}"
            		echo "exiting..."
            		echo ""
            		usage
@@ -72,11 +72,11 @@ while getopts ":i:o:x:b:" options; do
         x)
           if [[ -f ${OPTARG} ]] ; then
             transformsFile=${OPTARG}
-            echo""
-            echo"Found ${transformsFile}."
+            echo ""
+            echo "Found ${transformsFile}"
           else
             echo ""
-            echo "Error: Cannot find file named ${transformsFile}."
+            echo "Error: Cannot find file named ${transformsFile}"
             echo "exiting..."
             echo ""
             usage
@@ -112,8 +112,8 @@ if [[ -z "$outRootName" ]] ; then
 	echo ""
 fi
 
-# Make fulle output name
-outputName = ${outRootName}".ali"
+# Make full output name
+outputName="${outRootName}.ali"
 
 # Check if ouput file exists and back it up if so
 if [[ -f ${outputName} ]] ; then
@@ -125,7 +125,9 @@ if [[ -f ${outputName} ]] ; then
 
 fi
 
-echo" Now running newstack"
+echo ""
+echo "Now running newstack...this can take some time, please be patient :)"
+echo ""
 
 if [[ -z ${binningFactor} ]] || [[ ${binningFactor} -le 1 ]]   ; then
   newstack \
