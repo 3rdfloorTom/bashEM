@@ -108,7 +108,7 @@ while getopts ":i:a:d:t:r:m:" options; do
             fi
             ;;
         m)
-            if [[ ${OPTARG} =~ ^[0-9]+$ ]]
+            if [[ ${OPTARG} =~ ^[0-9]+$ ]] ; then
            		min_points=${OPTARG}
             else
            		echo ""
@@ -135,7 +135,7 @@ if [[ -z "$(ls -A ${imodDirectory})" ]]; then
 else
 
 	# Make a logfile in the imod directory if it doesn't already exist
-	if ! [[ -f "${imodDirectory}"/batchPatch4warp.log ]]
+	if ! [[ -f "${imodDirectory}"/batchPatch4warp.log ]] ; then
 		echo "tilt-series	excluded-views	mean-residual	contour-count	outcome" > "${imodDirectory}"/batchPatch4warp.log
 	fi
 
@@ -145,7 +145,7 @@ else
 		cd "${i}"
 
 		# If a SUCCESS.log exists, skip this tilt-series
-		if [[ -f SUCCESS.log ]]
+		if [[ -f SUCCESS.log ]] ; then
 			echo ""
 			echo "SUCCESS.log exists! Skipping..."
 			echo "Remove SUCCESS.log if you wish to reprocess this tilt-series"
@@ -179,7 +179,7 @@ else
 		# Check if any bad views were found
 		 viewCount=$(wc -l ExcludedViews.tmp | awk '{print $1}')
 
-		 if [[ viewCount -gt 0 ]]
+		 if [[ viewCount -gt 0 ]] ; then
 			
 			counter=0
 			# If bad views found, reorder vertical file into horizontal csv
@@ -206,7 +206,7 @@ else
 
 
 		# Hide pre-existing session if it exists
-		if [[  -f "${i}.edf" ]]
+		if [[  -f "${i}.edf" ]] ; then
 			mv "${i}.edf" "${i}.edf.bak"
 		fi
 		# Determine binning for coarse alignment (typically ~10 A/px is good)
@@ -220,7 +220,7 @@ else
 		sed -i '1c\setupset.copyarg.name=${ts_name}' "${i}_directive.adoc"
 		
 		# Change patch size for tracking if binning differs from default
-		if [[ binBy != 2 ]]
+		if [[ binBy != 2 ]] ; then
 			# Patch sizes for Patch-tracking routine (based on ~4k x 4k)
 			patchX=$(( 680 / binBy ))
 			patchY=$(( 680 / binBy ))
@@ -306,7 +306,7 @@ else
 		echo "Final fiducial error: ${num}" >> ${ts_name}_edit_fiducial.log
 
 		#write to logs
-		if (($remain_pts > $min_points))
+		if (($remain_pts > $min_points)) ; then
 			echo "Alignment criterion: Residuals<${target_resid} Contours>${min_points} achieved!" > SUCCESS.log
 			echo "${ts_name}	${viewString}	${num}	${remain_pts}	SUCCESS" >>  "${imodDirectory}/batchPatch4warp.log"
 		else

@@ -29,9 +29,9 @@ usage ()
 {
 	echo ""
 	echo "Rather simple wrapper to IMOD's tilt program to create the tomogram by WBP and rotates about x"
-  echo "The script guesses the binning from .ali header, assuming K2 frames (i.e., 3838 x 3710)"
+        echo "The script guesses the binning from .ali header, assuming K2 frames (i.e., 3838 x 3710)"
 	echo "Useful for when upsampling and not wanting to redo everything from scratch"
-  echo ""
+        echo ""
 	echo "Usage is:"
 	echo ""
 	echo "$(basename $0) -i input.ali -o outRootName -t tiltFile -x tiltFile -h thickness"
@@ -40,7 +40,7 @@ usage ()
 	echo "		-i: input aligned stack (.ali) file 						    (required)"
 	echo "		-o: rootname for output files (if different than input, e.g. 'volume01')    	    (optional)"
 	echo "		-t: tilt file (.tlt)    							    (required)"
-	echo "   		-x: xtilt file (.xtlt) file    							    (required)"
+	echo "   		-x: xtilt file (.xtilt) file   							    (required)"
   	echo "   		-h: thickness in voxels    							    (optional, default is a generous 1500)"
 	echo ""
 	exit 0
@@ -106,9 +106,9 @@ while getopts ":i:o:t:x:h:" options; do
            		echo "Using default value of 1500"
            		echo ""
            		
-        	      thickness = 1500
+        	       thickness=1500
 	
-           	fi
+            fi
             ;;
         *)
             usage
@@ -119,7 +119,7 @@ shift "$((OPTIND-1))"
 
 # Make sure thickness is set or define default
 if [[ -z ${thickness} ]] ; then
-  thickness = 1500
+  thickness=1500
   echo ""
   echo " Using default thickness:   ${thickness}"
   echo ""
@@ -221,7 +221,7 @@ trimvol -rx tmp.rec ${outputName} >> ${outRootName}"_tiltlog.txt"
 
 # Check and report if everything work, if so, then remove non-rotated tomogram.
 if [[ -f ${outputName} ]] ; then
-  echo "Tomogram reconstructed, rotated about x, and written out as:  ${outputName}."
+  echo "Tomogram reconstructed, rotated about x, and written out as:  ${outputName}"
   rm tmp.rec
 else
     echo "Tomogram rotation failed...check tmp.rec"
