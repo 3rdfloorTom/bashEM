@@ -35,7 +35,7 @@ fi
 #grab command-line arguements
 while getopts ":i:s:n:" options; do
     case "${options}" in
-        i)  if [[ -z ${OPTARG} ]] ; then
+        i)  if [[ -f ${OPTARG} ]] ; then
       		inScript=${OPTARG}
 	    else
 		echo ""
@@ -46,6 +46,7 @@ while getopts ":i:s:n:" options; do
             ;;
 	s)	# Don't know how to check this...
 	    scriptArgs=${OPTARG}
+	    ;;
         n)
             if [[ ${OPTARG} =~ ^[0-9]+$ ]] ; then
            		Ncores=${OPTARG}
@@ -56,7 +57,8 @@ while getopts ":i:s:n:" options; do
 				echo ""
 				Ncores=$(nproc)
 
-			fi
+          		fi
+	  
             else
            		echo ""
            		echo "Error: Number of cores must be a positive integer."
@@ -110,18 +112,40 @@ mkdir ${tmpDir}
 
 # Split the input script
 scriptRoot=${inScript%.*}
+echo ""
+echo "Splitting ${inScript} and writing output files to ${tmpDir}/"
+echo ""
 split -d -l 1 ${inScript} "${tmpDir}/${scriptRoot}_"
 
+# Need to set the permissions
+chmod 775 ${tmpDir}"/"*
+
+# Total lines to run over
+lines=$(wc -l ${inScript} | awk '{print $1}')
+
+echo "Total number of files from splitting ${inScript} is ${lines}"
+echo ""
+
 # Loop counter
-count=0
+count=1
 # Run all of the splits
-for script in $(ls *${tmpDir}/"*) ;
-do
+
+sleep 5s
+echo "The script ${inScript} has been split and will run in batches of ${Ncores}...get ready for some terminal vomit!"
+echo""
+sleep 5s
+
+
+
+for script in $(ls ${tmpDir}"/"*) ;
+do	
 	# Waits for all child processes of the for loop when i is divisible by 0, increment i afer 0 test
 	# Not the best way to do it if scripts have variable runtime since it waits for the last to finish before starting the next batch
 	((i=i%${Ncores})); ((i++==0)) && wait
 
-	./${inScript} ${scriptArgs} &
+	./${script} ${scriptArgs} > /dev/null &
+  
+	echo "Executed $(basename $script) ${scriptArgs} 	${count} of ${lines}"
 
 	((count++))
 done
