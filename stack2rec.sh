@@ -27,8 +27,8 @@ usage ()
 {
 	echo ""
 	echo "Rather simple wrapper to IMOD's newstack & tilt program to create the tomogram by WBP and rotates about x"
-        echo "This scriptss assumes K2 frames (i.e., 3838 x 3710) and all necessary files are in working directory"
-	echo "Files such as: .st, .xf, .tlt"
+        echo "This scripts assumes K2 frames (i.e., 3838 x 3710) and all necessary files are in working directory"
+	echo "Files such as: .st, .tlt, .xf*, *not necessary if no xtilt"
 	echo "Useful for when upsampling and not wanting to redo everything from scratch"
         echo ""
 	echo "Usage is:"
@@ -39,7 +39,7 @@ usage ()
 	echo "		-i: input aligned stack (.st) file						    (required)"							
 	echo "		-o: directory name for all output files					    	    (optional, default is reconTomo)"
 	echo "		-b: binning factor 			  					    (optional, default is no binning)"
-  	echo "   		-h: reconstruction thickness in voxels 					    (optional, default is a generous 1500)"
+  	echo "		-h: reconstruction thickness in voxels		 				    (optional, default is a generous 1500)"
 	echo "		-d: invoke if input.st is nonDW, but alignment data are DW			    (optional)" 
 	echo ""
 	exit 0

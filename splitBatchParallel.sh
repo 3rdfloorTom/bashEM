@@ -21,7 +21,7 @@ usage ()
 	echo ""
 	echo "options list:"
 	echo "	-i: input file/script with options				(required)"
-	echo "  -s: arguements for the scripts given in -i, enclose in quotes 	(optional)"
+	echo "	-s: arguements for the scripts given in -i, enclose in quotes 	(optional)"
 	echo "	-n: number of cores to use					(optional, default 12)"
 	echo ""
 	exit 0

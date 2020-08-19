@@ -62,7 +62,7 @@ if [[ ! -z $(grep "_rlnRandomSubset" ${inStar}) ]] ; then
 
 	echo ""
 	echo "Input file already contains a rlnRandomSubset field!"
-	echo "Use a starfile where this parameter has not yet been assigned or risk baising your future reconstructions!"
+	echo "Use a starfile where this parameter has not yet been assigned or risk biasing your future reconstructions!"
 	echo ""
 	usage
 fi
