@@ -150,11 +150,14 @@ do
 	((count++))
 done
 
+wait
+
 echo ""
 echo "Finished a crude batch parallel run of ${inScript}"
 echo "You just ran ${count} jobs in batch parallel."
 echo ""
 echo "Script done!"
 echo ""
+
 exit 1
 

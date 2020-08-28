@@ -33,7 +33,7 @@ usage ()
         echo ""
 	echo "Usage is:"
 	echo ""
-	echo "$(basename $0) -i input.st -o outDirectory -t tiltFile -b binning -h thickness -d"
+	echo "$(basename $0) -i input.st -o outDirectory -b binning -h thickness -d"
 	echo ""
 	echo "options list:"
 	echo "		-i: input aligned stack (.st) file						    (required)"							

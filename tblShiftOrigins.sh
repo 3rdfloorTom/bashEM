@@ -64,7 +64,7 @@ shift "$((OPTIND-1))"
 # Get file rootname and make outfile
 rootName=${inTbl%.tbl}
 
-if [[ -z scaleFactor ]] ; then
+if [[ -z $scaleFactor ]] ; then
 	outTbl=${rootName}"_shifted.tbl"
 	scaleFactor=1
 else
@@ -73,7 +73,7 @@ fi
 
 # Likely much easier in matlab, but what ever
 # AWK's gonna AWK
-awk -v scale=${scaleFactor} '{print $1,$2,$3,0,0,0,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,($24+$4)*scale,($25+$5)*scale,($26+$6)*scale,$27,$28,$29,$30,$31,$32,$33,$34,$35}' ${inTbl} > ${outTbl}
+awk -v scale=${scaleFactor} '{print $1,$2,$3,0,0,0,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,(($24+$4)*scale + 0.5),(($25+$5)*scale + 0.5),(($26+$6)*scale + 0.5),$27,$28,$29,$30,$31,$32,$33,$34,$35}' ${inTbl} > ${outTbl}
 
 echo ""
 echo "Finished shifting (& maybe rescaling) the input table."

@@ -13,9 +13,9 @@
 usage () 
 {
 	echo ""
-	echo "This scripts applies orientations a Relion extraction job star based on a star file converted from Dynamo"
+	echo "This scripts applies orientations a Relion prepare_subtomo.star based on a star file converted from Dynamo"
 	echo ""
-	echo "The extraction star file is expected to have the order MicName,X,Y,Z,ImageName,CtfImage,Mag,Dpix"
+	echo "The relion star file is expected to have the order MicName,X,Y,Z,ImageName,CtfImage,Mag,Dpix"
 	echo "The Dynamo generated star files is expected to have the column order X,Y,Z,Rot,Tilt,Psi,MicName"
 	echo "Usage is:"
 	echo ""
@@ -90,13 +90,13 @@ echo "Now performing Euler angle assignment this can take a minute, implementati
 echo "...just want to point out that it gets the job done nonetheless!"
 echo ""
 
-# While loop to read the extraction starfile line by line and store the columns are variables
+# While loop to read the relion starfile line by line and store the columns are variables
 # Set a counter to know that everything went as planned
 
 loopCount=0
 while read -r starTomo starX starY starZ starImage starCtf starMag starPx remainder
 do
-	# The names may differ by the extension and the extraction star will likely have the least amount of stuff on the end (i.e., no _DW_3Dctf_full.rec
+	# The names may differ by the extension and the relion star will likely have the least amount of stuff on the end (i.e., no _DW_3Dctf_full.rec
 
 	tomoRootName=$(basename $starTomo .mrc)
 	
@@ -109,7 +109,7 @@ do
 		-v starCtf=$starCtf \
 		-v starMag=$starMag \
 		-v starPx=$starPx \
-		'{if (($7 ~ tomo) && ($1 == starX) && ($2 == starY) && ($3 == starZ)) {print tomo,starX,starY,starZ,starImage,starCtf,starMag,starPx,$4,$5,$6}}' "tStarHeadless.tmp"
+		'{if (($7 ~ tomo) && ($1 == starX) && ($2 == starY) && ($3 == starZ)) {print tomo,starX,starY,starZ,starImage,starCtf,starMag,starPx,$4,$5,$6;exit}}' "tStarHeadless.tmp" &
 ((loopCount++))
 done < "eStarHeadless.tmp" >> ${outFile}
 # all output appended to output starfile
