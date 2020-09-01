@@ -107,7 +107,7 @@ else
 	echo ""
 	echo "The specified tomogram name extension is ${extension}"
 fi	
-	echo "This will be removed from the .coord file name."
+	echo "This will be removed from the .coords file name."
 	echo ""
 
 # Remove the file header
@@ -130,6 +130,11 @@ do
 	echo "Printed coordinates for ${i} to ${outDir}/${i}.coords"
 	echo ""
 done
+
+# Tidy-up
+rm "${outDir}/starBody.tmp"
+rm "${outDir}/tomoNames.tmp"
+
 
 echo ""
 echo "Finished printing coordinate files for ${count} tomograms to ${outDir}/"
