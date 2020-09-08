@@ -5,8 +5,7 @@
 #
 # Author(s): Tom Laughlin University of California-San Diego 2020
 #
-# This script coverts between Fourier pixels and real-space resolution (in Angstroms) using shell commands.
-#
+# 
 #
 ###########################################################################################################
 
@@ -94,6 +93,7 @@ pixelSize=$(head -n 1 ${mdocFile} | awk '{print $3}')
 echo ""
 echo ""
 echo "Found pixel size from mdoc in a/px: ${pixelSize}"
+echo "This is not used in calculations at all...just thought you would like to know. :)"
 echo ""
 
 #flox=$(echo "scale = 5; ${flux} / ${pixelSize} / ${pixelSize}" | bc)
