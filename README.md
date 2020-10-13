@@ -2,10 +2,10 @@
 
 A seemingly random mixture of shell scripts for EM-related software packages. 
 
-To the best of my abilities I have tried to group them to fit their application in handling files from different EM-related software packages. 
-Almost all of these scripts invoke an IMOD function call, so it is best to have those on the PATH. 
-Metadata parsing is generally performed with just awk/shell commands. 
-Plotting scripts typically use gnuplot and Eye of Gnome for display. 
+To the best of my abilities I have tried to group them to fit their application in handling files from different EM-related software packages. <br/> 
+Almost all of these scripts invoke an IMOD function call, so it is best to have those on the PATH. <br/>
+Metadata parsing is generally performed with just awk/shell commands. <br/>
+Plotting scripts typically use gnuplot and Eye of Gnome for display. <br/>
 
 
 ## How to run
