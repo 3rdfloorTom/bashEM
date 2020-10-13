@@ -64,7 +64,7 @@ shift "$((OPTIND-1))"
 ## Check for required arguements
 if [[ -z $nomRes ]] || [[ -z $partRad ]] ; then
 	echo ""
-	echo "Error: Nominal resolution and particle radius be set!"
+	echo "Error: Nominal resolution and particle radius must be set!"
 	echo ""
 	usage
 else
