@@ -7,6 +7,12 @@ Almost all of these scripts invoke an IMOD function call, so it is best to have 
 Metadata parsing is generally performed with just awk/shell commands. <br/>
 Plotting scripts typically use gnuplot and Eye of Gnome for display. <br/>
 
+## Abbreviations list
+- dyn-	Dynamo
+-  e2-	EMAN2
+- emC-	emClarity
+- rln-	RELION
+- wrp-	Warp/M
 
 ## How to run
 - Add the directories to your PATH for ease of use.
