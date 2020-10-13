@@ -15,7 +15,12 @@ Plotting scripts typically use gnuplot and Eye of Gnome for display. <br/>
 - wrp	-	Warp/M
 
 ## How to run
-- Add the directories to your PATH for ease of use.
+- Add the directories to your PATH for ease of use by adding something like this to your .bashrc <br/>
+`for dir in '/path/to/bashEM'*/; 
+do 
+	PATH="$dir:$PATH"; 
+done; 
+export PATH;` <br/>
 - Running of any (most?) scripts without any command-line arguements should printout the usage (some better than others).
 
 
