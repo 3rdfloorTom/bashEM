@@ -257,6 +257,8 @@ else
 	       		 # Generate stack with excluded views using IMOD function
 			excludeviews -stack ${ts_name}.st -delete -views ${viewString}
 			
+		else
+			viewString="None"		
 	 	fi
 
 		# Hide pre-existing session if it exists
@@ -401,6 +403,12 @@ else
 		#remove symlink
 		rm ${ts_name}		
 	done
+		
+	# Format the log file so that it looks nice
+
+	awk '{printf "%-40s %-10s %-10s %-10s %-10s\n", $1,$2,$3,$4,$5}' ${logFile} > tmp.log
+	cp ${logFile} ${logFile}.bak
+	mv tmp.log ${logFile}
 
 	 echo ""
 	 echo "Looks like the run finished!"
