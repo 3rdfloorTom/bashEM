@@ -21,9 +21,10 @@ for dir in '/path/to/bashEM'*/
 do  
 	PATH="$dir:$PATH" 
 done  
-export PATH;
+
+export PATH
 ```
-<br/>
+
 - Running of any (most?) scripts without any command-line arguements should printout the usage (some better than others).
 
 
