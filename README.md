@@ -4,8 +4,9 @@ A seemingly random mixture of shell scripts for EM-related software packages.
 
 I have tried to group them to fit their application in handling files from different EM-related software packages. <br/> 
 Almost all of these scripts invoke an IMOD function call, so it is best to have those on the PATH. <br/>
-Metadata parsing is generally performed with just awk/shell commands. <br/>
+File parsing is generally performed with just AWK/sed/shell commands. <br/>
 Plotting scripts typically use gnuplot and Eye of Gnome for display. <br/>
+Additional dependencies will be explicitly stated in the usage for each script. <br/>
 
 ## Abbreviations list
 - dyn	-	Dynamo
@@ -25,10 +26,11 @@ done
 export PATH
 ```
 
-- Running of any (most?) scripts without any command-line arguements should printout the usage (some better than others).
+- Running of any (most?) scripts without any arguements should print out the usage (some better than others).
 
 
 ## Known issues
-- All of these scripts can be deemed as "works-in-progress", so use if you find them helpful but don't have too high of hopes for them. 
-- I am not great the using git.
+- AWK/sed are favorite square peg solutions to round hole problems.
+- All of these scripts can be deemed as "works-in-progress". Use if you find them helpful, but don't have too high of hopes for them. 
+- I am not great at using git.
 
