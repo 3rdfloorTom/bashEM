@@ -15,16 +15,21 @@ usage ()
 	echo ""
 	echo "This scripts plots a histogram the Autopick Figure-of-Merit (FOM) of a coordinate star file"
 	echo ""
+	echo "It uses gnuplot for plotting and Eye of Gnome for display of the histogram at the end."
 	echo ""
 	echo "Usage is:"
 	echo ""
-	echo "$(basename $0) -i input.star"
+	echo "$(basename $0) -i input.star -f fineness"
 	echo ""
 	echo "options list:"
 	echo "	-i: .star generated from a RELION/Warp template matching run			(required)"
+	echo "	-f: fineness of how to set the bins, bigger number = more bins			(optional, default=4)"
 	echo ""
 	exit 0
 }
+
+# set default values
+fineness=4
 
 # check for any arguements at all
 if [[ $# == 0 ]] ; then
@@ -32,7 +37,7 @@ if [[ $# == 0 ]] ; then
 fi
 
 #grab command-line arguements
-while getopts ":i:" options; do
+while getopts ":i:f:" options; do
     case "${options}" in
         i)
             if [[ -f ${OPTARG} ]] ; then
@@ -47,8 +52,18 @@ while getopts ":i:" options; do
            		usage
             fi
             ;;
-
-         *)
+	f)
+	    if	[[ ${OPTARG} =~ ^[0-9]+$ ]] ; then
+			fineness=${OPTARG}
+	    else
+			echo ""
+			echo "Error: the fineness parameter must be a postive integer!"
+			echo "Using the default of $fineness"
+			echo ""
+	    fi
+	
+	    ;;
+        *)
 	            usage
             ;;
     esac
@@ -95,7 +110,7 @@ echo ""
 # Get histogram parameters
 xmin=$(tail -n 1 ${outFile})
 xmax=$(head -n 1 ${outFile})
-bins=$(echo "scale = 2; ($xmax - $xmin)*4 " | bc)
+bins=$(echo "scale = 2; ($xmax - $xmin)*$fineness " | bc)
 width=$(echo "scale = 2; ($xmax -$xmin)/$bins" | bc)
 
 # File for plotting
@@ -161,9 +176,12 @@ echo ""
 gnuplot <<- EOF
 set key off
 set border 4095
-set xtics 0.5 rotate by 60 right nomirror
 
-set terminal pngcairo enhanced font "arial,10" fontscale 1.0 size 600, 400
+set xtics 0.5 rotate by 60 right nomirror
+set grid xtics
+
+set size ratio 0.5
+set terminal pngcairo enhanced font "arial,10" fontscale 1.0
 set output "${outFile%.*}_histogram.png"
 
 set title "Histogram of Autopick FOM scores"
@@ -171,7 +189,7 @@ set ylabel "Counts"
 set xlabel "Score bins"
 
 set style data boxes
-set boxwidth 0.9 relative
+set boxwidth 0.45 relative
 set style fill solid
 
 
@@ -185,8 +203,10 @@ eog ${outFile%.*}_histogram.png &
 rm ${outFile}
 
 echo ""
+echo "Bins and counts used for the histogram have been written out as:"
+echo "${histfile}"
+echo ""
 echo "Plot will display shortly...Eye of Gnome can take a minute of some manchines."
-echo "Bins and counts used for the histogram have been written out as ${histfile}"
 echo ""
 echo "Script done!"
 echo ""
