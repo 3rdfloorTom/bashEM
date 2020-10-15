@@ -181,10 +181,10 @@ set xtics 0.5 rotate by 60 right nomirror
 set grid xtics
 
 set size ratio 0.5
-set terminal pngcairo enhanced font "arial,10" fontscale 1.0
+set terminal pngcairo noenhanced font "arial,10" fontscale 1.0
 set output "${outFile%.*}_histogram.png"
 
-set title "Histogram of Autopick FOM scores"
+set title "Histogram of Autopick FOM scores: \n ${inStar}"
 set ylabel "Counts"
 set xlabel "Score bins"
 
