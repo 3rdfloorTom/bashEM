@@ -23,13 +23,13 @@ usage ()
 	echo ""
 	echo "options list:"
 	echo "	-i: .star generated from a RELION/Warp template matching run			(required)"
-	echo "	-f: fineness of how to set the bins, bigger number = more bins			(optional, default=4)"
+	echo "	-f: fineness of how to set the bins, bigger number = more bins			(optional, default=10)"
 	echo ""
 	exit 0
 }
 
 # set default values
-fineness=4
+fineness=10
 
 # check for any arguements at all
 if [[ $# == 0 ]] ; then
