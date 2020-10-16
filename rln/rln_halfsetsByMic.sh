@@ -13,7 +13,7 @@
 usage () 
 {
 	echo ""
-	echo "This scripts assigns the half-sets for a Relion starfile by micrograph/tomogram and tries to make them as even as possible given this constraint"
+	echo "This scripts assigns the half-sets for a RELION-3.0 starfile by micrograph/tomogram and tries to make them as even as possible given this constraint"
 	echo "Important for when working with closely-packed/crystalline assemblies"
 	echo ""
 	echo "This script is not too smart and just assigns rlnRandomSubset to the last field."
@@ -24,7 +24,7 @@ usage ()
 	echo "$(basename $0) -i input.star"
 	echo ""
 	echo "options list:"
-	echo "	-i: .star generated from a Relion extraction job			(required)"
+	echo "	-i: .star generated from an extraction job			(required)"
 	echo ""
 	exit 0
 }
@@ -35,7 +35,7 @@ if [[ $# == 0 ]] ; then
 fi
 
 #grab command-line arguements
-while getopts ":i:t:" options; do
+while getopts ":i:" options; do
     case "${options}" in
         i)
             if [[ -f ${OPTARG} ]] ; then
@@ -75,6 +75,8 @@ outFile="${inStar%.*}_split.star"
 fieldNum=$(grep "_rln" ${inStar} | wc -l)
 ((fieldNum++))
 
+micField=$(grep "_rlnMicrographName" | awk '{print $2}' | sed 's|#||')
+
 # Prepare header
 awk '{if ($0 !~ /.mrc/) {print $0}}' ${inStar} > ${outFile}
 echo "_rlnRandomSubset #${fieldNum}" >> ${outFile} 
@@ -96,13 +98,13 @@ echo ""
 
 awk '{if ($0 ~ /.mrc/) {print $0}}' ${inStar} > "tmpDir/inStarBody.txt"
 
-# Find all unique tomogram names (assumed column 1)
-awk '{print $1}' "tmpDir/inStarBody.txt" | sort | uniq > "tmpDir/uniqTomos.txt"
+# Find all unique micrograph names
+awk -v micField=$micField '{print $micField}' "tmpDir/inStarBody.txt" | sort | uniq > "tmpDir/uniqTomos.txt"
 
 # Split the original starfile body by tomogram (better way to do this with arrays probabl
 while IFS=" " read -r tomo remainder
 do
-	awk -v tomo=${tomo} '{if ($1 == tomo) {print $0}}' "tmpDir/inStarBody.txt" > "tmpDir/$(basename $tomo.mrc).star" 
+	awk -v tomo=${tomo} -v micField=$micField '{if ($micField == tomo) {print $0}}' "tmpDir/inStarBody.txt" > "tmpDir/$(basename $tomo .mrc*).star" 
 
 done < "tmpDir/uniqTomos.txt"
 
