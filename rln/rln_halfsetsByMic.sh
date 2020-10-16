@@ -16,6 +16,8 @@ usage ()
 	echo "This scripts assigns the half-sets for a RELION-3.0 starfile by micrograph/tomogram and tries to make them as even as possible given this constraint"
 	echo "Important for when working with closely-packed/crystalline assemblies"
 	echo ""
+	echo "It will output input_split.star"
+	echo ""
 	echo "This script is not too smart and just assigns rlnRandomSubset to the last field."
 	echo "It will get very upset if there is already a rlnRandomSubset field in the file."
 	echo ""
@@ -75,7 +77,7 @@ outFile="${inStar%.*}_split.star"
 fieldNum=$(grep "_rln" ${inStar} | wc -l)
 ((fieldNum++))
 
-micField=$(grep "_rlnMicrographName" | awk '{print $2}' | sed 's|#||')
+micField=$(grep "_rlnMicrographName" ${inStar} | awk '{print $2}' | sed 's|#||')
 
 # Prepare header
 awk '{if ($0 !~ /.mrc/) {print $0}}' ${inStar} > ${outFile}
@@ -144,6 +146,9 @@ sizeA=$(wc -l ${starA})
 sizeB=$(wc -l ${starB})
 cat ${starA} >> ${outFile}
 cat ${starB} >> ${outFile}
+
+# Tidy-up
+rm -rf tmpDir
 
 echo ""
 echo "Finished writing out ${outFile} which contains ${totalPctls} particles."
