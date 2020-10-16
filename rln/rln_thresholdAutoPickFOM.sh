@@ -118,8 +118,8 @@ fomField=$(grep "_rlnAutopickFigureOfMerit" ${inStar} | awk '{print $2}' | sed '
 # Grab header (lines without .mrc in them)
 awk '{if ($0 !~ /.mrc/) {print $0}}' ${inStar} > ${outFile}
 
-# Threshold FOM field and output to new file
-awk -v fom=$fomField -v threshL=$threshLow -v threshH=$threshHigh '{if ($0 ~ /.mrc/ && ($fom >= threshL && $fom < threshH)) {print $0}}' ${inStar} >> ${outFile}
+# Threshold FOM field and output to new file (sort so it is ease to tell the thresholding later by top and bottom values)
+awk -v fom=$fomField -v threshL=$threshLow -v threshH=$threshHigh '{if ($0 ~ /.mrc/ && ($fom >= threshL && $fom < threshH)) {print $0}}' ${inStar} | sort -nr -k$fomField >> ${outFile}
 
 # Determine the pre/post thresholding particle counts
 preCount=$(grep ".mrc" $inStar | wc -l | awk '{print $1}')
