@@ -109,7 +109,7 @@ awk '{if ($0 ~ /mrc/) {print $0}}' ${inStar} > "starBody.tmp"
 starCount=$(wc -l "starBody.tmp" | awk '{print $1}')
 
 echo ""
-echo "Looping through star and table files for ${starCount} particle positions, this can take a minute..."
+echo "Looping through star and table files for ${starCount} particle positions, this can take a while..."
 echo "Output supressed from the loop to speed-up things up a bit."
 echo "Check (h)top in another tab if you are concerned that the script may have frozen."
 echo ""
@@ -132,13 +132,15 @@ do
 
 done < "starBody.tmp" > ${outTbl}
 
+tblCount=$(wc -l ${outTbl} | awk '{print $1}')
+
 # Tidy-up
 rm "starBody.tmp"
 
 echo ""
 echo "Finished selecting particles from the input Dynamo table based on the input starfile."
 echo ""
-echo "The output Dynamo table has been written out as ${outTbl} particles positions."
+echo "The output Dynamo table has been written out as ${outTbl} containing ${tblCount} particles positions."
 echo ""
 echo "Script done!"
 echo ""
