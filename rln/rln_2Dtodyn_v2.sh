@@ -8,23 +8,25 @@
 # 
 #
 ###########################################################################################################
-
+:
 #usage description
 usage () 
 {
 	echo ""
-	echo "This scripts parses a Dynamo .tbl based on a RELION particle.star of the same data."
+	echo "This scripts parses a Dynamo .tbl based on a RELION particle.star generated from the same data."
 	echo "It takes a particle.star, a .tbl, and a .doc."
 	echo ""
 	echo "The expectation is the particle.star is from a Select job after Class2D RELION."
+	echo ""
+	echo "NOTE: the columns 17-19 in the .tbl should be 60 0 0, respectively. This allows reliable use of grep, which makes 'v2' slightly faster..."
 	echo "Usage is:"
 	echo ""
-	echo "$(basename $0) -i select.star -t original.tbl -d originalColumn20.doc"
+	echo "$(basename $0) -i particle.star -t original.tbl -d originalColumn20.doc"
 	echo ""
 	echo "options list:"
-	echo "	-i: particle.star generated from a RELION Select job on Class2D output		(required)"
-	echo "	-t: .tbl used in generating the .star used as input for Class2D			(required)"
-	echo "	-d: indiciesColumn20.doc, the tomogram index for the Dynamo .tbl	(required)"
+	echo "	-i: particle.star generated from a Relion Select job on Class2D output      (required)"
+	echo "	-t: .tbl used in generating the .star used for Class2D                      (required)"
+	echo "	-d: indiciesColumn20.doc, the tomogram index for the Dynamo .tbl            (required)"
 	echo ""
 	exit 0
 }
@@ -120,18 +122,14 @@ do
 	
 	# Get index from .doc
 	Idx=$(grep ${tomoRootName} ${tomoIdx} | awk '{print $1}')	
-
-	# Remove trailing 0's on coordinates from star file
+	
+	# Remove trailing 0's on RELION particle positions
 	starX=${starX%.*}
 	starY=${starY%.*}
 	starZ=${starZ%.*}
-		
-	# Match up coordinates and tomograms between table and starfile
-	awk -v Idx=$Idx \
-		-v starX=$starX \
-		-v starY=$starY \
-		-v starZ=$starZ \
-		'{if ( ($20 == Idx) && ($24 ~ starX) && ($25 ~ starY) && ($26 ~ starZ) ) {print $0; exit}}' ${inTbl} & 
+	
+	# Add the leading '60 0 0' for a cheat to use grep, which is faster than conditional matching with AWK
+	grep "60 0 0 $Idx.*$starX.*$starY.*$starZ.*" ${inTbl} &
 
 done < "starBody.tmp" > ${outTbl}
 
