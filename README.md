@@ -1,4 +1,4 @@
-# bashEM
+#bashEM
 
 A seemingly random mixture of shell scripts for EM-related software packages. 
 
@@ -25,7 +25,12 @@ done
 
 export PATH
 ```
-
+For, C-shell users add this to your .cshrc (?) <br/>
+```csh
+foreach dir ('/path/to/bashEM'/*)
+	set PATH=($dir:$PATH)
+end
+```
 - Running of any (most?) scripts without any arguements should print out the usage (some better than others).
 
 
