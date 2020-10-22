@@ -29,6 +29,10 @@ exclusionThresh=7
 target_resid=0.5
 min_points=7
 
+# Heuristically seems to work well when data beened to 8-12 A/px
+patchX=340
+patchY=340
+
 # Usage description
 usage () 
 {
@@ -58,7 +62,7 @@ while getopts ":i:m:a:d:t:r:n:" options; do
 
         i)
 	    if [[ -d ${OPTARG} ]] ; then
-           		imodDirectory=${OPTARG}
+           		imodDirectory=$( realpath ${OPTARG} )
             else
            		echo ""
            		echo "Fatal Error: Cannot find Warp's imod directory at specified location."
@@ -69,7 +73,7 @@ while getopts ":i:m:a:d:t:r:n:" options; do
             ;;
 	m)
 	    if [[ -d ${OPTARG} ]] ; then
-           		mdocDirectory=${OPTARG}
+           		mdocDirectory=$(realpath ${OPTARG} )
             else
            		echo ""
            		echo "Fatal Error: Cannot find mdoc directory at specified location."
@@ -135,7 +139,6 @@ while getopts ":i:m:a:d:t:r:n:" options; do
 done
 shift "$((OPTIND-1))"
 
-
 # Check that imod directory is not empty
 if [[ -z "$(ls -A ${imodDirectory})" ]]; then
 	echo ""
@@ -157,7 +160,7 @@ else
 
 	# Make a logfile in the imod directory if it doesn't already exist
 	if ! [[ -f "${logFile}" ]] ; then
-		echo "tilt-series	excluded-views	mean-residual	contour-count	outcome" > "${logFile}"
+		echo "tilt-series				excluded-views	mean-residual	contour-count	outcome" > "${logFile}"
 	fi
 
 	# Iterate through imod directory to perform automated patch tracking alignment
@@ -184,7 +187,9 @@ else
 		ts_name=$(basename $i)
 		ts_mdoc="${mdocDirectory}/${ts_name}.mdoc"
 		
-				
+		# Sanitize mdoc if necessary
+		dos2unix $ts_mdoc
+		
 		# Check if tilt axis rotation present in ts already
 		headCheck=$(header ${ts_name}.st | grep "Tilt axis angle")	
 
@@ -271,25 +276,29 @@ else
 		#	then round
 		binBy=$(echo "scale = 1; 10 / $pixelSize" | bc | awk '{print int($1+0.5)}')
 		
-		echo ""
-		echo "Using a recommended binning factor for alignment of ${binBy}"
-		echo ""
-		
+	
 		# Make adoc file for this tilt-series then add the defaults from the template adoc file
 		echo "setupset.copyarg.name=${ts_name}" > "${ts_name}_directive.adoc"
 		cat "${accessories_path}/${adocTemplate}" >> "${ts_name}_directive.adoc"
 
 		# Change patch size for tracking if binning differs from default
 		if [[ ${binBy} -ne 2 ]]  ; then
-			# Patch sizes for Patch-tracking routine (based on ~4k x 4k)
-			patchX=$(( 680 / $binBy ))
-			patchY=$(( 680 / $binBy ))
+			sed -i "s|BinByFactor=2|BinByFactor=${binBy}|g" "${ts_name}_directive.adoc"
+			sed -i "s|ImagesAreBinned=2|ImagesAreBinned=${binBy}|g" "${ts_name}_directive.adoc"
+	        fi
+	
+		echo ""
+		echo "Using a recommended binning factor for alignment of ${binBy}"
 
-			sed -i 's|BinByFactor=2|BinByFactor=${binBy}|g' "${ts_name}_directive.adoc"
-			sed -i 's|ImagesAreBinned=2|ImagesAreBinned=${binBy}|g' "${ts_name}_directive.adoc"
-	    		sed -i 's|SizeOfPatchesXandY=340,340|SizeOfPatchesXandY=${patchX},${patchY}' "${ts_name}_directive.adoc"
-                fi
-		
+		# Default patches for K2 binned to 8-12 A/px seems to work well	
+		sed -i "s|SizeOfPatchesXandY=340,340|SizeOfPatchesXandY=${patchX},${patchY}|" "${ts_name}_directive.adoc"
+	
+
+		echo "scaling size of patches accordingly to ${patchX},${patchY}"
+		echo ""	
+
+
+	
 	    # Make a sym-link to tilt-series so etomo doesn't error out when setting directive
 		ln -s ${ts_name}.st ${ts_name}
 	    # Set directive	
@@ -326,25 +335,30 @@ else
 		fi
 
 		# Coarse alignment
-		submfg xcorr.com
-		submfg prenewst.com
+		echo "Now performing coarse alignment of $ts_name"
+		submfg xcorr.com > /dev/null
+		submfg prenewst.com > /dev/null
 
 		# Fiducial Model Generation (patch tracking)
-		makecomfile -root ${ts_name} -input xcorr.com -binning ${binBy} -ou xcorr_pt.com -change ./"${ts_name}_directive.adoc"
-		submfg xcorr_pt.com
+		echo "Preparing for fidicual model for patch-tracking"
+
+		makecomfile -root ${ts_name} -input xcorr.com -binning ${binBy} -ou xcorr_pt.com -change ./"${ts_name}_directive.adoc" > /dev/null
+		submfg xcorr_pt.com > /dev/null
 
 		# Fine alignment (edit fiducial model)
+		echo "Performing fine alignment via patch-tracking..."
+
 		line_number=$(grep -n "xfproduct" align.com|cut -d : -f 1)
 		sed -i "$[${line_number} + 4]i ScaleShifts 1.0,${binBy}" align.com #scaleshifts matches coarse aligned binning.
 		sed -i '/SeparateGroup/c\' align.com
-		submfg align.com
+		submfg align.com > /dev/null
 
 		alignlog -e > ${ts_name}_taError.log
 		alignlog -c > ${ts_name}_taCoordinates.log
 		alignlog -w > ${ts_name}_taRobust.log
 		alignlog -s > ${ts_name}_taSolution.log
 
-		model2point -c -ob -fl -i ${ts_name}.fid -ou ${ts_name}_fid.pt #convert imod model to a points list for easy editing
+		model2point -c -ob -fl -i ${ts_name}.fid -ou ${ts_name}_fid.pt	> /dev/null  #convert imod model to a points list for easy editing
 		mv ${ts_name}.fid ${ts_name}.fid.orig #archive original fiducial model
 		cp ${ts_name}_fid.pt ${ts_name}_fid.pt.orig #archive initial points list model
 
@@ -372,9 +386,9 @@ else
 		    echo "Insufficient remaining points" > FAIL.log
 		    break
 		 fi
-		 point2model -op -ci 5 -w 2 -im ${ts_name}.preali -in ${ts_name}_fid.pt -ou ${ts_name}.fid
-		 dd if=${accessories_path}/fid_header.bin of=${ts_name}.fid bs=1 count=136 conv=notrunc #change if= to point to fid_header.bin where ever it is. This is some voodoo hex magic because the header contains contour information.
-		 submfg align.com #re-compute alignment
+		 point2model -op -ci 5 -w 2 -im ${ts_name}.preali -in ${ts_name}_fid.pt -ou ${ts_name}.fid > /dev/null
+		 dd if=${accessories_path}/fid_header.bin of=${ts_name}.fid bs=1 count=136 conv=notrunc > /dev/null #change if= to point to fid_header.bin where ever it is. This is some voodoo hex magic because the header contains contour information.
+		 submfg align.com > /dev/null # re-compute alignment
 		 alignlog -e > ${ts_name}_taError.log
 		 alignlog -c > ${ts_name}_taCoordinates.log
 		 alignlog -w > ${ts_name}_taRobust.log

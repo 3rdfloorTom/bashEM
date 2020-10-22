@@ -13,20 +13,22 @@
 usage () 
 {
 	echo ""
-	echo "This script takes a directory of SerialEM mdoc files, a directory of Warp's tomostar files and a flux in e/A^2/s."
+	echo "This script takes a directory of SerialEM mdoc files, a directory of Warp's tomostar files and a flux in e/A^2/s or directory of _DoseRate.txt files."
+	echo ""
+	echo "A _DoseRate.txt file must just contain one line that is the flux for the corresponding tilt-series and possess the same basename as cognate tilt-series."
+	echo ""
 	echo "It outputs the tomostar (.baks the original)  with an adjusted  _wrpDose for each tilt based on the mdoc metadata and input flux."
 	echo ""
-	echo "Useful for constant counts tilt-schemes in which each tilt may experience a different delta-fluence."
 	echo ""
-	echo "NOTE: assumes all tilt-series were acquired using the same flux"
 	echo "Usage is:"
 	echo ""
-	echo "$(basename $0) -i myFile.mdoc -e myNumber"
+	echo "$(basename $0) -i /path/to/mdoc's -t /path/to/.tomostar's {(-e flux) or (-d /path/to/_DoseRate.txt's)}"
 	echo ""
 	echo "options list:"
 	echo "	-i: mdoc/file/directory						(required)"
 	echo "	-t: tomostar/file/directory					(required)"
-	echo "	-e: Corresponding flux for .mdoc in e/A^2/s			(required)"
+	echo "	-e: Corresponding flux for .mdoc in e/A^2/s			(optional)"
+	echo "	-d: Directory of _DoseRate.txt files with flux for each mdoc	(optional)"	
 	echo ""
 	exit 0
 }
@@ -37,7 +39,7 @@ if [[ $# == 0 ]] ; then
 fi
 
 #grab command-line arguements
-while getopts ":i:t:e:" options; do
+while getopts ":i:t:e:d:" options; do
     case "${options}" in
 	
 	i)  if [[ -d ${OPTARG} ]] ; then
@@ -71,7 +73,17 @@ while getopts ":i:t:e:" options; do
            		usage
             fi
             ;;
-         *)
+	d)
+	    if [[ -d ${OPTARG} ]] ; then
+		doseDir=${OPTARG}
+	    else
+		echo ""
+		echo "Cannot find the specified doserate directory."
+		echo ""
+		usage
+	    fi
+	    ;;
+        *)
             usage
             ;;
     esac
@@ -93,9 +105,9 @@ if [[ -z $starDir ]] ; then
 	usage
 fi
 
-if [[ -z $flux ]] ; then
+if [[ -z $flux ]] && [[ -z $doseDir ]] ; then
 	echo ""
-	echo "Error: No flux was provided."
+	echo "Error: Either a flux or a directory with the _DoseRate.txt files must be provided."
 	echo ""
 	usage
 fi
@@ -108,10 +120,28 @@ do
 	
 	echo "Working on $starFile"
 
-	#Get rootname
+	# Get rootname
 	tomoName=$(basename $starFile .tomostar)
 
-	#Check for corresponding mdoc or else skip
+	# Get flux from a _DoseRate.txt file	
+	if [[ $doseDir ]] ; then
+
+		if [[ -f ${doseDir}/${tomoName%.mrc}_DoseRate.txt ]] ; then
+		
+			flux=$(head -n 1 ${doseDir}/${tomoName%.mrc}_DoseRate.txt)
+		
+			echo ""
+			echo "Using a flux of $flux for $tomoName"
+			echo ""
+		else
+			echo ""
+			echo "Error: Could not find ${tomoName}_DoseRate.txt"
+			echo "Using previously set flux of $flux for $tomoName"
+			echo ""
+		fi
+	fi 
+
+	# Check for corresponding mdoc or else skip
 	if [[ -z ${mdocDir}/${tomoName}.mdoc ]] ; then
 		echo ""
 		echo "Could not locate corresponding mdoc for $starFile"
@@ -149,7 +179,7 @@ do
 	sed -i 's|-| |g' "dateStamp.tmp"
 	sed -i 's|:| |g' "timeStamp.tmp"
 
-	# Combine in a files with 11 columns 
+	# Combine in a files with 11 columns (some are carry-over from re-use of another script below...)
 	paste "tiltAngles.tmp" "exposureTimes.tmp" "dateStamp.tmp" "timeStamp.tmp" "tiltNames.tmp" > "combined.tmp"
 
 	# shenanigans time
@@ -180,7 +210,7 @@ do
 
 	# Move new tomostar to old tomostar name
 	mv ${starFile}.tmp ${starFile}
-	chmod -x ${starFile}
+	chmod 775 ${starFile}
 
 	echo ""
 	echo "Finished updating ${starFile}"
