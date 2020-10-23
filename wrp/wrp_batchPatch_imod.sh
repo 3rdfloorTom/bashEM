@@ -25,13 +25,16 @@ adocTemplate="TL_directive.adoc"
 # Default for bad tilt exclusion threshold
 exclusionThresh=7
 
-# Defaults for automated patch-tracking for etomo
-target_resid=0.5
-min_points=7
+# Default coarse binning
+binBy=2
 
 # Heuristically seems to work well when data beened to 8-12 A/px
 patchX=340
 patchY=340
+
+# Defaults for automated patch-tracking for etomo
+target_resid=0.5
+min_points=7
 
 # Usage description
 usage () 
@@ -270,13 +273,15 @@ else
 		if [[  -f "${ts_name}.edf" ]] ; then
 			mv "${ts_name}.edf" "${ts_name}.edf.bak"
 		fi
+	
+	# The below does not seem to work-out too well at the moment. Bin 2 and 340,340 it is!
+	
 		# Determine binning for coarse alignment (typically ~10 A/px is good)
 		# 	bash doesn't handle floating-point and rounding well..."bc" enables floating-point arithmetic, 
 		# 	"scale" tells bc to return that many digits past the decimal place
 		#	then round
-		binBy=$(echo "scale = 1; 10 / $pixelSize" | bc | awk '{print int($1+0.5)}')
-		
-	
+		#binBy=$(echo "scale = 1; 10 / $pixelSize" | bc | awk '{print int($1+0.5)}')
+			
 		# Make adoc file for this tilt-series then add the defaults from the template adoc file
 		echo "setupset.copyarg.name=${ts_name}" > "${ts_name}_directive.adoc"
 		cat "${accessories_path}/${adocTemplate}" >> "${ts_name}_directive.adoc"
@@ -288,13 +293,13 @@ else
 	        fi
 	
 		echo ""
-		echo "Using a recommended binning factor for alignment of ${binBy}"
+		echo "Using a binning factor for coarse alignment of ${binBy}"
 
-		# Default patches for K2 binned to 8-12 A/px seems to work well	
+		# Default patches for K2 binned to 7-12 A/px seems to work well	
 		sed -i "s|SizeOfPatchesXandY=340,340|SizeOfPatchesXandY=${patchX},${patchY}|" "${ts_name}_directive.adoc"
 	
 
-		echo "scaling size of patches accordingly to ${patchX},${patchY}"
+		echo "using X,Y patch sizes for fine alignment of ${patchX},${patchY}"
 		echo ""	
 
 
@@ -336,14 +341,14 @@ else
 
 		# Coarse alignment
 		echo "Now performing coarse alignment of $ts_name"
-		submfg xcorr.com > /dev/null
-		submfg prenewst.com > /dev/null
+		submfg xcorr.com 
+		submfg prenewst.com 
 
 		# Fiducial Model Generation (patch tracking)
-		echo "Preparing for fidicual model for patch-tracking"
+		echo "Preparing for fidicual model for fine alignment by patch-tracking"
 
 		makecomfile -root ${ts_name} -input xcorr.com -binning ${binBy} -ou xcorr_pt.com -change ./"${ts_name}_directive.adoc" > /dev/null
-		submfg xcorr_pt.com > /dev/null
+		submfg xcorr_pt.com 
 
 		# Fine alignment (edit fiducial model)
 		echo "Performing fine alignment via patch-tracking..."
@@ -351,14 +356,14 @@ else
 		line_number=$(grep -n "xfproduct" align.com|cut -d : -f 1)
 		sed -i "$[${line_number} + 4]i ScaleShifts 1.0,${binBy}" align.com #scaleshifts matches coarse aligned binning.
 		sed -i '/SeparateGroup/c\' align.com
-		submfg align.com > /dev/null
+		submfg align.com 
 
 		alignlog -e > ${ts_name}_taError.log
 		alignlog -c > ${ts_name}_taCoordinates.log
 		alignlog -w > ${ts_name}_taRobust.log
 		alignlog -s > ${ts_name}_taSolution.log
 
-		model2point -c -ob -fl -i ${ts_name}.fid -ou ${ts_name}_fid.pt	> /dev/null  #convert imod model to a points list for easy editing
+		model2point -c -ob -fl -i ${ts_name}.fid -ou ${ts_name}_fid.pt	 #convert imod model to a points list for easy editing
 		mv ${ts_name}.fid ${ts_name}.fid.orig #archive original fiducial model
 		cp ${ts_name}_fid.pt ${ts_name}_fid.pt.orig #archive initial points list model
 
@@ -386,9 +391,9 @@ else
 		    echo "Insufficient remaining points" > FAIL.log
 		    break
 		 fi
-		 point2model -op -ci 5 -w 2 -im ${ts_name}.preali -in ${ts_name}_fid.pt -ou ${ts_name}.fid > /dev/null
-		 dd if=${accessories_path}/fid_header.bin of=${ts_name}.fid bs=1 count=136 conv=notrunc > /dev/null #change if= to point to fid_header.bin where ever it is. This is some voodoo hex magic because the header contains contour information.
-		 submfg align.com > /dev/null # re-compute alignment
+		 point2model -op -ci 5 -w 2 -im ${ts_name}.preali -in ${ts_name}_fid.pt -ou ${ts_name}.fid
+		 dd if=${accessories_path}/fid_header.bin of=${ts_name}.fid bs=1 count=136 conv=notrunc #change if= to point to fid_header.bin where ever it is. This is some voodoo hex magic because the header contains contour information.
+		 submfg align.com  # re-compute alignment
 		 alignlog -e > ${ts_name}_taError.log
 		 alignlog -c > ${ts_name}_taCoordinates.log
 		 alignlog -w > ${ts_name}_taRobust.log
