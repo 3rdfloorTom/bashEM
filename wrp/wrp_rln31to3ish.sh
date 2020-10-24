@@ -14,7 +14,9 @@ usage ()
 {
 	echo ""
 	echo "This script takes a RELION-3.1 star file and RELION-3'ish' star file for import into Warp-v1.09"
-	echo "That is, it removes the optics table and converts the shifts from Angstroms to pixels"
+	echo "That is, it removes the optics table and converts the shifts from Angstroms to pixels."
+	echo ""
+	echo "NOTE: It assumes all the data is of the same pixel size."
 	echo ""
 	echo "It will output input_rln3ish.star"
 	echo ""
@@ -78,7 +80,8 @@ oriY=$(grep "_rlnOriginYAngst" ${inStar} | awk '{print $2}' | sed 's|#||')
 oriZ=$(grep "_rlnOriginYAngst" ${inStar} | awk '{print $2}' | sed 's|#||')
 
 # Get field of pixel size
-pxSize=$(grep "_rlnPixelSize" ${inStar} | awk '{print $2}' | sed 's|#||')
+pxSize=$(grep "opticsGroup1" ${inStar} | awk '{print $5}')
+
 
 # Take all lines after match and divide angstrom shifts by pixel size before printing to new file
 sed -n '/^data_particles$/,$p' ${inStar} | awk -v oriX=$oriX -v oriY=$oriY -v oriZ=$oriZ -v pxSize=$pxSize '{if ($0 ~ /.mrc/) {$oriX=$oriX/$pxSize ; $oriY=$oriY/$pxSize ; $oriZ=$oriZ/$pxSize; print $0} else print $0}' > ${outFile}
