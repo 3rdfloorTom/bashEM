@@ -22,10 +22,11 @@ usage ()
 	echo ""
 	echo "Usage is:"
 	echo ""
-	echo "$(basename $0) -i input.star"
+	echo "$(basename $0) -i input.star -p pixelSize"
 	echo ""
 	echo "options list:"
 	echo "	-i: RELION-3.1 .star file generated from a refinement job			(required)"
+	echo "	-p: Pixel size of data in Angstroms						(required)"
 	echo ""
 	exit 0
 }
@@ -36,7 +37,7 @@ if [[ $# == 0 ]] ; then
 fi
 
 #grab command-line arguements
-while getopts ":i:" options; do
+while getopts ":i:p:" options; do
     case "${options}" in
 
          i)
@@ -52,6 +53,20 @@ while getopts ":i:" options; do
            		usage
             fi
             ;;
+
+	 p)
+	    if	[[ ${OPTARG} =~ ^[0-9]+([.][0-9]+)?$ ]] ; then
+			pxSize=${OPTARG}
+			echo ""
+			echo "Using input pixel size of: $pxSize"
+			echo ""
+	    else
+			echo ""
+			echo "Error: Input pixel size must be a postive value!"
+			echo ""
+			usage
+	    fi
+	    ;;
 
          *)
 	            usage
@@ -70,6 +85,13 @@ if [[ -z $(grep "data_optics" ${inStar}) ]] ; then
 	exit 0
 fi
 
+if [[ -z ${pxSize} ]] ; then
+	echo ""
+	echo "Error: a pixel size has not be provided!"
+	echo "Exiting..."
+	echo ""
+	exit 0
+fi
 
 # Give output a name
 outFile="${inStar%.*}_rln3ish.star"
@@ -77,14 +99,10 @@ outFile="${inStar%.*}_rln3ish.star"
 # Get field numbers for shifts
 oriX=$(grep "_rlnOriginXAngst" ${inStar} | awk '{print $2}' | sed 's|#||')
 oriY=$(grep "_rlnOriginYAngst" ${inStar} | awk '{print $2}' | sed 's|#||')
-oriZ=$(grep "_rlnOriginYAngst" ${inStar} | awk '{print $2}' | sed 's|#||')
-
-# Get field of pixel size
-pxSize=$(grep "opticsGroup1" ${inStar} | awk '{print $5}')
-
+oriZ=$(grep "_rlnOriginZAngst" ${inStar} | awk '{print $2}' | sed 's|#||')
 
 # Take all lines after match and divide angstrom shifts by pixel size before printing to new file
-sed -n '/^data_particles$/,$p' ${inStar} | awk -v oriX=$oriX -v oriY=$oriY -v oriZ=$oriZ -v pxSize=$pxSize '{if ($0 ~ /.mrc/) {$oriX=$oriX/$pxSize ; $oriY=$oriY/$pxSize ; $oriZ=$oriZ/$pxSize; print $0} else print $0}' > ${outFile}
+sed -n '/^data_particles$/,$p' ${inStar} | awk -v oriX=$oriX -v oriY=$oriY -v oriZ=$oriZ -v pxSize=$pxSize '{if ($0 ~ /.mrc/) {$oriX=$oriX/pxSize ; $oriY=$oriY/pxSize ; $oriZ=$oriZ/pxSize; print $0} else print $0}' > ${outFile}
 
 # Edit some data loop and field names
 sed -i 's|data_particles|data_|' ${outFile}
