@@ -110,10 +110,19 @@ if [[ -z $rootname ]] ; then
 fi
 
 outputList=$rootname".vll"
+outputDoc=$rootname"_indices_column20.doc"
+
 # remove existing list if present
 if [[ -f $outputList ]] ; then
 	rm $outputList
 fi
+
+if [[ -f $outputDoc ]] ; then
+	rm $outputDoc
+fi
+
+# Loop counter for tomogram indexing
+counter=1
 
 # Loop over tomostars to get a list of tomograms
 for i in  ${wrpDir}/*.tomostar; 
@@ -147,7 +156,7 @@ do
 	negExt=$(awk '{if (NF > 2) {print $2}}' $starFile | tail -n 1)
 	
 	if [ $useDecon == "true" ] ; then 
- 		deconFullName=$deconDir/$tomoRootName
+ 		deconFullName=$deconDir/${tomoRootName}_${apix}Apx.mrc
 	        echo $(realpath $deconFullName)
 		echo "* cropFromFile = "$(realpath $tomoFullName)
 		echo "* cropFromElsewhere = 1"
@@ -164,11 +173,15 @@ do
 		echo "* ftype = 1"
 		echo ""
 	fi >> $outputList
+
+	echo "$counter	$(realpath $tomoFullName)" >> $outputDoc
 	
+	((counter++))	
 done
 
 echo ""
 echo "Wrote out the volume list: ${outputList}"
+echo "Wrote volume index Col-20: ${outputDoc}"
 echo "Ready for import into a Dynamo catalogue for particle picking and cropping"
 echo ""
 echo "Just use: dcm -create name_of_catalogue -fromvll ${outputList}"
