@@ -126,19 +126,26 @@ starB="tmpDir/halfSetB.star"
 touch ${starA}
 touch ${starB}
 
+printf "%s %65s %20s\n" "ImageName:" "Pctls:" "Halfset:"
+
 # Get sorted file names
 while IFS=" " read -r pctlCount tomoName remainder
 do
 	# Get present sizes of half-sets
-	sizeA=$(wc -l ${starA})
-	sizeB=$(wc -l ${starB})
+	sizeA=$(wc -l $starA | awk '{print $1}')
+	sizeB=$(wc -l $starB | awk '{print $1}')	
+
 
 	# Determine which halfset is presently smaller and then fill it
-	if [[ ${sizeA} < ${sizeB} ]] ; then
-		awk '{print $0,1}' ${tomoName} >> ${starA} 	
+	if [ $sizeA -lt $sizeB ] ; then
+		awk '{print $0,1}' ${tomoName} >> ${starA} 
+		halfSet=1	
 	else
 		awk '{print $0,2}' ${tomoName} >> ${starB}
+		halfSet=2
 	fi
+
+	printf "%60s %15s %15s\n" $(basename $tomoName .star) $pctlCount $halfSet
 
 done < "tmpDir/star_sizes.txt"
 
@@ -148,7 +155,7 @@ cat ${starA} >> ${outFile}
 cat ${starB} >> ${outFile}
 
 # Tidy-up
-rm -rf tmpDir
+#rm -rf tmpDir
 
 echo ""
 echo "Finished writing out ${outFile} which contains ${totalPctls} particles."
