@@ -111,7 +111,8 @@ sed -i 's|_rlnOriginYAngst|_rlnOriginY|' ${outFile}
 sed -i 's|_rlnOriginZAngst|_rlnOriginZ|' ${outFile}
 
 echo ""
-echo "Finished writing out ${outFile} ready for extraction in Warp-v1.09."
+echo "Finished writing out: ${outFile}"
+echo "Ready for extraction in Warp-v1.09!"
 echo ""
 echo "Script done!"
 echo ""

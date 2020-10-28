@@ -146,7 +146,7 @@ for i in $tomoList; do
 	awk -v dimX=$dimX \
 		-v dimY=$dimY \
 		-v dimZ=$dimZ \
-		'{if ($0 ~/mrc/) {print $1*dimX,$2*dimY,$3*dimZ} } ' $matchDir/${tomoName%.mrc}_$coordSuffix > "${outDir}/Tomograms/${tomoName%.mrc}/${tomoName%.mrc}_ASCII.coords"
+		'{if ($0 ~/mrc/) {print $1*dimX,$2*dimY,$3*dimZ} } ' $matchDir/${tomoName%.mrc_*}.mrc_$coordSuffix > "${outDir}/Tomograms/${tomoName%.mrc}/${tomoName%.mrc}_ASCII.coords"
 
 	# Coordinate count
 	count=$(wc -l "${outDir}/Tomograms/${tomoName%.mrc}/${tomoName%.mrc}_${coordSuffix%.star}.coords" | awk '{print $1}')	
