@@ -141,15 +141,15 @@ for i in $tomoList; do
 	mkdir -p "${outDir}/Tomograms/${tomoName%.mrc}"
 	
 	# Soft-link to tomograms
-	ln -s $(realpath $i) "${outDir}/Tomograms/${tomoName%.mrc}/$tomoName"
+	ln -s $(realpath $i) "${outDir}/Tomograms/${tomoName%.mrc}/${tomoName%.mrc_*}.mrc"
 	
 	awk -v dimX=$dimX \
 		-v dimY=$dimY \
 		-v dimZ=$dimZ \
-		'{if ($0 ~/mrc/) {print $1*dimX,$2*dimY,$3*dimZ} } ' $matchDir/${tomoName%.mrc_*}.mrc_$coordSuffix > "${outDir}/Tomograms/${tomoName%.mrc}/${tomoName%.mrc}_ASCII.coords"
+		'{if ($0 ~/mrc/) {print $1*dimX,$2*dimY,$3*dimZ} } ' $matchDir/${tomoName%.mrc_*}.mrc_$coordSuffix > "${outDir}/Tomograms/${tomoName%.mrc}/${tomoName%.mrc_*}_ASCII.coords"
 
 	# Coordinate count
-	count=$(wc -l "${outDir}/Tomograms/${tomoName%.mrc}/${tomoName%.mrc}_${coordSuffix%.star}.coords" | awk '{print $1}')	
+	count=$(wc -l "${outDir}/Tomograms/${tomoName%.mrc}/${tomoName%.mrc_*}_ASCII.coords" | awk '{print $1}')	
 
 	echo "Wrote out ${count} coordinates for ${tomoName}"
 
