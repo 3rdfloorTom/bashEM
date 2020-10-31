@@ -146,10 +146,10 @@ for i in $tomoList; do
 	awk -v dimX=$dimX \
 		-v dimY=$dimY \
 		-v dimZ=$dimZ \
-		'{if ($0 ~/mrc/) {print $1*dimX,$2*dimY,$3*dimZ} } ' $matchDir/${tomoName%.mrc_*}.mrc_$coordSuffix > "${outDir}/Tomograms/${tomoName%.mrc}/${tomoName%.mrc_*}_ASCII.coords"
+		'{if ($0 ~/mrc/) {print $1*dimX,$2*dimY,$3*dimZ} } ' $matchDir/${tomoName%.mrc_*}.mrc_$coordSuffix > "${outDir}/Tomograms/${tomoName%.mrc}/${tomoName%.mrc_*}_XYZ.coords"
 
 	# Coordinate count
-	count=$(wc -l "${outDir}/Tomograms/${tomoName%.mrc}/${tomoName%.mrc_*}_ASCII.coords" | awk '{print $1}')	
+	count=$(wc -l "${outDir}/Tomograms/${tomoName%.mrc}/${tomoName%.mrc_*}_XYZ.coords" | awk '{print $1}')	
 
 	echo "Wrote out ${count} coordinates for ${tomoName}"
 
@@ -167,7 +167,7 @@ echo ""
 echo "Also wrote out ${tomoStar} for use in RELION-3.0"
 echo ""
 echo ""
-echo "Import Tomograms/*/*_${coordSuffix%.star}.coords as a particle coordinates Node-type"
+echo "Import Tomograms/*/*_XYZ.coords as a particle coordinates Node-type"
 echo ""
 echo "Extract Z-projections using the ${tomoStar} and the imported coordinates."
 echo "		* Manually set the pixel size."
