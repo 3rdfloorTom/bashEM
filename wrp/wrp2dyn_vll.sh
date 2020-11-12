@@ -110,7 +110,7 @@ if [[ -z $rootname ]] ; then
 fi
 
 outputList=$rootname".vll"
-outputDoc=$rootname"_indicies_column20.doc"
+outputDoc=$rootname"_indices_column20.doc"
 
 # remove existing list if present
 if [[ -f $outputList ]] ; then
