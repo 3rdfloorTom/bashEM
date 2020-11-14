@@ -268,13 +268,7 @@ else
 		echo "Proceeding to run patch tracking alignment"
 		echo ""
 
-	 	# Get image stats for determing bad views using IMOD function
-	 	clip stats ${ts_name}.st >> stats.log 
-	 	sed -i '1,2d' "stats.log"				# remove header lines
-		sed -i '$d' "stats.log"					# remove bottom line
-		sed -i 's|)|    |g' "stats.log"
-		
-		# Sanitize mdoc if necessary
+	 	# Sanitize mdoc if necessary
 		dos2unix $ts_mdoc
 		
 		# Check if tilt axis rotation present in ts already
@@ -311,7 +305,7 @@ else
 		echo ""
 
 	 	# Get image stats for determing bad views using IMOD function
-	 	clip stats ${ts_name}.st >> stats.log 
+	 	clip stats ${ts_name}.st > stats.log 
 	 	sed -i '1,2d' "stats.log"				# remove header lines
 		sed -i '$d' "stats.log"					# remove bottom line
 		sed -i 's|)|    |g' "stats.log"
@@ -330,7 +324,7 @@ else
 			# If bad views found, reorder vertical file into horizontal csv
 			for i in `cat ExcludedViews.tmp`; do
 
-				if (counter == 0) ; then
+				if [[ $counter -eq 0 ]] ; then
 					viewString=$(echo $i)
 				else
 					viewString=$(echo $viewString,$i)
@@ -347,10 +341,10 @@ else
 			fi
 			
 	       		 # Generate stack with excluded views using IMOD function
-			excludeviews -stack ${ts_name}.st -delete -views ${viewString}
+			#excludeviews -stack ${ts_name}.st -delete -views ${viewString}
 			
 		else
-			viewString="None"		
+			viewString=""		
 	 	fi
 
 		# Hide pre-existing session if it exists
@@ -368,6 +362,7 @@ else
 			
 		# Make adoc file for this tilt-series then add the defaults from the template adoc file
 		echo "setupset.copyarg.name=${ts_name}" > "${ts_name}_directive.adoc"
+		echo "setupset.copyarg.skip=${viewString}" >> "${ts_name}_directive.adoc"
 		cat "${accessories_path}/${adocTemplate}" >> "${ts_name}_directive.adoc"
 
 		# Change patch size for tracking if binning differs from default
@@ -454,15 +449,64 @@ else
 		num=$(grep 'weighted mean' ${ts_name}_taRobust.log|tr -s ' '|cut -d ' ' -f 6) #check the log for the residual error
 		echo "Initial fiducial error: ${num}" >> ${ts_name}_edit_fiducial.log
 
-		# Initialize remain_points outside of while loop scope for logs later		
+		# Initialize remain_points outside of while loop scope for logs later
+	  	remain_pts=$(sort ${ts_name}_fid.pt -k 5 -n | tr -s ' ' | cut -d ' ' -f 6 | uniq -c | tr -s ' ' |cut -d ' ' -f 2 | sort -n | head -n 1) #count number of remaining points per tilt image. 
+		
+		while [ $(echo "$num > $target_resid" | bc) -eq 1 ]; do #iteratively remove contours until the target is reached. bc needed because bash does not handle floats.
+			 remain_pts=$(sort ${ts_name}_fid.pt -k 5 -n | tr -s ' ' | cut -d ' ' -f 6 | uniq -c | tr -s ' ' |cut -d ' ' -f 2 | sort -n | head -n 1) #count number of remaining points per tilt image. 
+		 if (($remain_pts > $min_points))
+		    then
+			    worst_resid=$(sort ${ts_name}_taCoordinates.log -k 7 -nr | head -n 1 | tr -s ' ' | cut -d ' ' -f 7,8)
+			    rm_contour=${worst_resid%% *} #find the contour with the largest residual
+			    cont_resid=${worst_resid##* } #contour residual value
+			
+			    if [ $rm_contour -eq 1 ] #needed due to presence of object number
+			    then
+			       rm_contour="1     1"
+			    fi
 
+		    grep -v " $rm_contour " ${ts_name}_fid.pt > ${ts_name}_temp_fid.pt #the magic rm is to find only contour labels.
+		    mv ${ts_name}_temp_fid.pt ${ts_name}_fid.pt
+		    echo "Removing contour #${rm_contour} with residual: ${cont_resid}" >> ${ts_name}_edit_fiducial.log
+		 else
+		    echo "Insufficient remaining points: FAIL" >> ${ts_name}_edit_fiducial.log
+		    echo "Insufficient remaining points" > FAIL.log
+		    break
+		 fi
+			 point2model -op -ci 5 -w 2 -im ${ts_name}.preali -in ${ts_name}_fid.pt -ou ${ts_name}.fid
+			 dd if=${accessories_path}/fid_header.bin of=${ts_name}.fid bs=1 count=136 conv=notrunc #change if= to point to fid_header.bin where ever it is. This is some voodoo hex magic because the header contains contour information.
+			 submfg align.com  # re-compute alignment
+			 alignlog -e > ${ts_name}_taError.log
+			 alignlog -c > ${ts_name}_taCoordinates.log
+			 alignlog -w > ${ts_name}_taRobust.log
+			 alignlog -s > ${ts_name}_taSolution.log
+			 num=$(grep 'weighted mean' ${ts_name}_taRobust.log|tr -s ' '|cut -d ' ' -f 6)
+			 echo "Current fiducial error: ${num}" >> "${ts_name}_edit_fiducial.log"
+		done
+
+		echo "Final fiducial error: ${num}" >> "${ts_name}_edit_fiducial.log"
+
+		#write to logs
+		if (($remain_pts > $min_points)) ; then
+			echo "Alignment criterion: Residuals<${target_resid} Contours>${min_points} achieved!" > "SUCCESS.log"
+			echo "${ts_name}	${viewString}	${num}	${remain_pts}	SUCCESS" >>  ${logFile}
+		else
+			echo "${ts_name}	${viewString}	${num}	${remain_pts}	FAIL" >>  ${logFile}
+		fi
+
+		# Make copy of taSolutions.log such that Warp can find it
+		cp "${ts_name}_taSolution.log" "taSolution.log"
+		
 		echo ""
 		echo "Finished patch tracking for ${ts_name}"
 		echo "Proceeding to next"
 		echo ""
 		
-		#remove symlink
-		rm ${ts_name}		
+		# Remove symlink
+		rm ${ts_name}	
+
+		# Make version of taSolutions that Warp recognizes
+		cp ${ts_name}_taSolution.log taSolution.log	
 	done
 		
 	# Format the log file so that it looks nice
