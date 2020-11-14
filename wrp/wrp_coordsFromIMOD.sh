@@ -141,7 +141,7 @@ echo ""
 
 # Convert model to points file (they should all be the same)
 model2point 	-input ${outName}.mod \
-		-output ${outName}.pt >/dev/null 2>/dev/null
+		-output ${outName}.pt
 
 # Determine the number of points
 count=$(wc -l ${outName}.pt | awk '{print $1}') 
