@@ -18,7 +18,7 @@ Additional dependencies will be explicitly stated in the usage for each script. 
 ## How to run
 - Add the directories to your PATH for ease of use by adding something like this to your .bashrc <br/>
 ```bash
-for dir in '/path/to/bashEM'*/
+for dir in '/path/to/bashEM/'*/
 do  
 	PATH="$dir:$PATH" 
 done  
