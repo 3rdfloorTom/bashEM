@@ -14,7 +14,7 @@ usage ()
 {
 	echo ""
 	echo "This script thresholds a RELION style autopick star file by the Figure of Merit (FOM)."
-	echo "It will out put a thresholded star file named input_thresh.star"
+	echo "It will out put a thresholded star file named input_threshFOM.star"
 	echo ""
 	echo "Usage is:"
 	echo ""
@@ -110,7 +110,7 @@ if [[ -z $(grep "_rlnAutopickFigureOfMerit" ${inStar}) ]] ; then
 fi
 
 # Give output a name
-outFile="${inStar%.*}_thresh.star"
+outFile="${inStar%.*}_threshFOM.star"
 
 # Get FOM field
 fomField=$(grep "_rlnAutopickFigureOfMerit" ${inStar} | awk '{print $2}' | sed 's|#||')
