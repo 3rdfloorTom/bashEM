@@ -14,6 +14,7 @@ Additional dependencies will be explicitly stated in the usage for each script. 
 - emC	-	emClarity
 - rln	-	RELION
 - wrp	-	Warp/M
+- ctem	-	cisTEM/Frealign
 
 ## How to run
 - Add the directories to your PATH for ease of use by adding something like this to your .bashrc <br/>
