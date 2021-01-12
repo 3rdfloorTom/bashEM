@@ -3,7 +3,7 @@
 #
 ##########################################################################################################
 #
-# Author(s): Tom Laughlin University of California-San Diego 2020
+# Author(s): Tom Laughlin University of California-San Diego 2021
 #
 # 
 #
@@ -43,11 +43,11 @@ while getopts ":i:f:" options; do
             if [[ -f ${OPTARG} ]] ; then
            		inPar=${OPTARG}
 			echo ""
-			echo "Found input starfile: ${inPar}"
+			echo "Found input parameter file: ${inPar}"
 			echo ""
             else
            		echo ""
-           		echo "Error: could not input starfile: ${inPar}"
+           		echo "Error: could not input parameter file: ${inPar}"
            		echo ""
            		usage
             fi
