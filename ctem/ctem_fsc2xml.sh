@@ -15,7 +15,6 @@ usage ()
 {
 	echo ""
 	echo "This scripts converts the statistics.txt file from Frealign/cisTEM containing partFSC information into a .xml format for EMDB deposition."
-	echo "NOTE: this script requires the function 'calc' to be installed (if you have a cuda-enabled IMOD install, it should already be present)."
 	echo ""
 	echo "Functional portion of code based on suggestion by Tim Grant."
 	echo ""
