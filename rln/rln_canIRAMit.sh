@@ -23,6 +23,7 @@ usage ()
 	echo "options list:"
 	echo "	-p: particle star file			(required)"
 	echo "	-b: box size in pixels			(required)"
+	echo "	-d: dimensionality			(optional, default=2)"
 	echo "	-m: number of MPI processes		(required)"
 	echo ""
 	exit 0
@@ -34,7 +35,7 @@ if [[ $# == 0 ]] ; then
 fi
 
 #grab command-line arguements
-while getopts ":p:b:m:" options; do
+while getopts ":p:b:d:m:" options; do
     case "${options}" in
         p)
             if [[ -f ${OPTARG} ]] ; then
@@ -56,6 +57,18 @@ while getopts ":p:b:m:" options; do
            		usage
            	fi
             ;;
+
+	d)
+	    if [[ ${OPTARG} -eq 2 ]] || [[ ${OPTARG} -eq 3 ]] ; then
+			dim=${OPTARG}
+		else	 
+			echo ""
+			echo "Invalid dimensionality, assuming dimensionality = 2"
+			echo ""
+			dim=2
+	        fi
+	    ;;
+
         m)
             if [[ ${OPTARG} =~ ^[0-9]+$ ]] ; then
            		numMPIs=${OPTARG}
@@ -97,8 +110,14 @@ sysRAM=$(free -g | awk '{if ($0 ~ /Mem:/) print $2}')
 # Get particle count
 particleCount=$( awk '{if ($0 ~/.mrc/) print $0}' $particleStar | wc -l)
 
+# Set data size
+size=$(($boxSize * $boxSize))
+if [[ $dim -eq 3 ]] ; then
+	size=$(($size * $boxSize))
+fi
+
 # Calculate memory requirement
-reqRAM=$(echo "4*$particleCount*$boxSize*$boxSize*$boxSize*$numMPIs/1024/1024/1024" | bc)
+reqRAM=$(echo "4*$particleCount*$size*$numMPIs/1024/1024/1024" | bc)
 
 # Moment of truth
 if [[ "$reqRAM" -lt "$sysRAM" ]] ; then
