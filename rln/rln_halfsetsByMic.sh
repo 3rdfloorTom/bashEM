@@ -13,13 +13,13 @@
 usage () 
 {
 	echo ""
-	echo "This scripts assigns the half-sets for a RELION-3.0 starfile by micrograph/tomogram and tries to make them as even as possible given this constraint"
+	echo "This scripts assigns the half-sets for a RELION starfile by micrograph/tomogram and tries to make them as even as possible given this constraint"
 	echo "Important for when working with closely-packed/crystalline assemblies"
 	echo ""
 	echo "It will output input_split.star"
 	echo ""
-	echo "This script is not too smart and just assigns rlnRandomSubset to the last field."
-	echo "It will get very upset if there is already a rlnRandomSubset field in the file."
+	echo "This script will not operate on files with a _rlnRandomSubset field already present."
+	echo "Use the relion_star_handler to remove a _rlnRandomSubset field is present and still desiring to use this script."
 	echo ""
 	echo "Usage is:"
 	echo ""
@@ -64,7 +64,7 @@ if [[ ! -z $(grep "_rlnRandomSubset" ${inStar}) ]] ; then
 
 	echo ""
 	echo "Input file already contains a rlnRandomSubset field!"
-	echo "Use a starfile where this parameter has not yet been assigned or risk biasing your future reconstructions!"
+	echo "Please remove it using the relion_star_handler if wishing to utilize this script."
 	echo ""
 	usage
 fi
@@ -73,14 +73,17 @@ fi
 # Give output a name
 outFile="${inStar%.*}_split.star"
 
-# Make the new column at the end
-fieldNum=$(grep "_rln" ${inStar} | wc -l)
+# Make the new column at the end of the data_particles table loop
+fieldNum=$(grep "_rln" ${inStar} | tail -n 1 | awk '{print $2}' | sed 's|#||')
 ((fieldNum++))
 
 micField=$(grep "_rlnMicrographName" ${inStar} | awk '{print $2}' | sed 's|#||')
 
-# Prepare header
+# Prepare header by grabbing all lines missing a reference to an image
 awk '{if ($0 !~ /.mrc/) {print $0}}' ${inStar} > ${outFile}
+# remove empty last line
+sed -i '$ d' ${outFile}
+# add randomSubset column
 echo "_rlnRandomSubset #${fieldNum}" >> ${outFile} 
 
 if [[ ! -d tmpDir ]] ; then
