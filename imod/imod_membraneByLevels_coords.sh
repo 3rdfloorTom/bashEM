@@ -191,20 +191,20 @@ objects=$(awk '{print $1}' ${outName}.pt | uniq | wc -l)
 for (( i = 1, m = 1 ; i < ${objects} ; i=i+2, m++ )) ;
 do
 	echo ""
-	awk -v points=$i -v scale=$scalingFactor '{if ($1==points) {print $3*scale, $4*scale, $5*scale}}' ${outName}.pt > ${outName}_model_${m}_points.xyz
+	awk -v points=$i -v scale=$scalingFactor '{if ($1==points) {print $3*scale, $4*scale, $5*scale}}' ${outName}.pt > ${outName}_model_${m}_points.txt
 
-		echo "	*Coordinates for points of model-${m} have been scaled by ${scalingFactor} and written out as:	${outName}_model_${m}_points.xyz"
+		echo "	*Coordinates for points of model-${m} have been scaled by ${scalingFactor} and written out as:	${outName}_model_${m}_points.txt"
 
-	awk -v center=$((i+1)) -v scale=$scalingFactor '{if ($1==center) {print $3*scale, $4*scale, $5*scale}}' ${outName}.pt > ${outName}_model_${m}_center.xyz
+	awk -v center=$((i+1)) -v scale=$scalingFactor '{if ($1==center) {print $3*scale, $4*scale, $5*scale}}' ${outName}.pt > ${outName}_model_${m}_center.txt
 
-		echo "	*Coordinates for center of model-${m} have been scaled by ${scalingFactor} and written out as:	${outName}_model_${m}_center.xyz"
+		echo "	*Coordinates for center of model-${m} have been scaled by ${scalingFactor} and written out as:	${outName}_model_${m}_center.txt"
 	echo ""
 done
 
 echo ""
 echo "Finished writing out scaled coordinates for import into Dynamo, or whatever this coordinate convention works for really."
 echo ""
-echo "Now, the .xyz files are ready to feed into pointToMembraneModel.m !"
+echo "Now, the .txt files are ready to feed into pointToMembraneModel.m !"
 echo ""
 
 exit 1
