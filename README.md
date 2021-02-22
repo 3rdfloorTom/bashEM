@@ -15,6 +15,7 @@ Additional dependencies will be explicitly stated in the usage for each script. 
 - rln	-	RELION
 - wrp	-	Warp/M
 - ctem	-	cisTEM/Frealign
+- csparc-	cryoSPARC
 
 ## How to run
 - Add the directories to your PATH for ease of use by adding something like this to your .bashrc <br/>
