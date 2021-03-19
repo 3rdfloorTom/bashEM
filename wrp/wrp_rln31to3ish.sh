@@ -18,7 +18,7 @@ usage ()
 	echo ""
 	echo "NOTE: It assumes all the data is of the same pixel size."
 	echo ""
-	echo "It will output input_rln3ish.star"
+	echo "It will output input_rln3ish_data.star"
 	echo ""
 	echo "Usage is:"
 	echo ""
@@ -94,7 +94,7 @@ if [[ -z ${pxSize} ]] ; then
 fi
 
 # Give output a name
-outFile="${inStar%.*}_rln3ish.star"
+outFile="${inStar%.*}_rln3ish_data.star"
 
 # Get field numbers for shifts
 oriX=$(grep "_rlnOriginXAngst" ${inStar} | awk '{print $2}' | sed 's|#||')
