@@ -94,7 +94,7 @@ if [[ -z ${pxSize} ]] ; then
 fi
 
 # Give output a name
-outFile="${inStar%.*}_rln3ish_data.star"
+outFile="${inStar%.*}_rln3ish_${pxSize}Apx_data.star"
 
 # Get field numbers for shifts
 oriX=$(grep "_rlnOriginXAngst" ${inStar} | awk '{print $2}' | sed 's|#||')
