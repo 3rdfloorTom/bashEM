@@ -27,6 +27,7 @@ usage ()
 	echo "options list:"
 	echo "	-i: input particle.star						(required)"
 	echo "	-s: semi-height to define the central sections to be projected  (required, in pixels)"
+	echo "	-j: just prepare the .star file for use with C2D projections	(optional) "
 	echo ""
 	exit 0
 }
@@ -38,7 +39,7 @@ fi
 
 #grab command-line arguements
 #grab command-line arguements
-while getopts ":i:s:" options; do
+while getopts ":i:s:j" options; do
     case "${options}" in
         i)
             if [[ -f ${OPTARG} ]] ; then
@@ -70,6 +71,10 @@ while getopts ":i:s:" options; do
 	    fi
 
 	    ;;
+
+	j)	
+		justStar=true
+	    ;;
 	
         *)
 	   	        usage
@@ -83,7 +88,7 @@ echo "Running $(basename $0)..."
 echo ""
 
 # Check inputs
-if [[ -z ${semiHeight} ]] ; then
+if [[ -z ${semiHeight} ]] && [[ -z ${justStar} ]]; then
 
 	echo ""
 	echo "Error: A semi-height (in pixels) must be specified."
@@ -124,6 +129,20 @@ sed -i '$ d' ${outStar}
 
 # add _proj.mrc suffix to the image field and write to the output.star file
 awk -v imField=$imField '{if ($0 ~/.mrc/) {$imField=$imField"_2Dproj.mrc"; print $0}}' ${inStar} >> ${outStar}
+
+
+# for just converting .star file
+if [ $justStar == "true" ]; then
+	
+	echo ""
+	echo "Just converted the input.star to work with 2D projection images."
+	echo "Wrote out converted .star for the projectios:	${outStar}"
+	echo ""
+	echo "Script done!"
+	echo ""
+	exit 1
+
+fi
 
 # Set bounds based on image size and semi-height
 imMid=$((imSize/2))
