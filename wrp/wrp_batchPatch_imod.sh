@@ -485,6 +485,12 @@ else
 		done
 
 		echo "Final fiducial error: ${num}" >> "${ts_name}_edit_fiducial.log"
+		
+		
+		# Needed viewString to be empty for setting the .adoc, but for spacing purposes in the log file, setting it here.
+		if [[ -z $viewString ]] ; then
+			viewString='None'
+		fi
 
 		#write to logs
 		if (($remain_pts > $min_points)) ; then
