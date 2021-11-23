@@ -3,7 +3,7 @@
 #
 ##########################################################################################################
 #
-# Author(s): Tom Laughlin University of California-San Diego 2020
+# Author(s): Tom Laughlin University of California-San Diego 2021
 #
 # 
 #
@@ -13,15 +13,15 @@
 usage () 
 {
 	echo ""
-	echo "This takes an flux in e/A^2/s and a SerialEM .mdoc files to make the corresponds Relion .order file."
+	echo "This a SerialEM .mdoc file to make the order_list.csv for RELION-v4"
+	echo "Note: This script requries dos2unix for mdoc sanitation"
 	echo ""
 	echo "Usage is:"
 	echo ""
-	echo "$(basename $0) -i myFile.mdoc -e myNumber"
+	echo "$(basename $0) -i myFile.mdoc"
 	echo ""
 	echo "options list:"
 	echo "	-i: A serialEM .mdoc file					(required)"
-	echo "	-e: Corresponding flux for .mdoc in e/A^2/s			(required)"
 	echo ""
 	exit 0
 }
@@ -32,7 +32,7 @@ if [[ $# == 0 ]] ; then
 fi
 
 #grab command-line arguements
-while getopts ":i:e:" options; do
+while getopts ":i:" options; do
     case "${options}" in
 	
 	i)  if [[ -f ${OPTARG} ]] ; then
@@ -44,17 +44,7 @@ while getopts ":i:e:" options; do
 			usage
 	    fi
 	    ;;
-   
-        e)
-            if [[ ${OPTARG} =~ ^[0-9]+([.][0-9]+)?$ ]] ; then
-           		flux=${OPTARG}
-            else
-           		echo ""
-           		echo "Error: flux must be a positive number."
-           		echo ""
-           		usage
-            fi
-            ;;
+
          *)
             usage
             ;;
@@ -70,46 +60,16 @@ if [[ -z $mdocFile ]] ; then
 	usage
 fi
 
-if [[ -z $flux ]] ; then
-	echo ""
-	echo "Error: No flux was provided."
-	echo ""
-	usage
-
-fi
-
-# Sanitize mdoc
 echo ""
 echo "Sanitizing input file..."
 echo ""
 dos2unix ${mdocFile}
 
 # Get rootname for output
-orderFile="$(basename $mdocFile .mrc.mdoc).order"
+orderFile="$(basename $mdocFile .mdoc).csv"
 
-# Get pixel size from mdoc
-pixelSize=$(head -n 1 ${mdocFile} | awk '{print $3}')
-
-echo ""
-echo ""
-echo "Found pixel size from mdoc in a/px: ${pixelSize}"
-echo "This is not used in calculations at all...just thought you would like to know. :)"
-echo ""
-
-#flox=$(echo "scale = 5; ${flux} / ${pixelSize} / ${pixelSize}" | bc)
-
-echo ""
-echo "Flux given in e/A^2/s is: ${flux}"
-echo ""
-
-echo ""
-echo "Now preparing order file..."
-echo ""
-
-# Get tilt angles, exposure time per frame, subframes, and time-stamps (this gets hairy)
-
-grep TiltAngle ${mdocFile} | awk '{print $3}' > "tiltAngles.tmp"
-grep ExposureTime ${mdocFile} | awk '{print $3}' > "exposureTimes.tmp" 
+# Get tilt angles and time-stamps (this gets hairy)
+grep TiltAngle ${mdocFile} | awk '{print $3}' > "tiltAngles.tmp" 
 grep DateTime ${mdocFile} | awk '{print $3}' > "dateStamp.tmp"
 grep DateTime ${mdocFile} | awk '{print $4}' > "timeStamp.tmp"
 
@@ -128,34 +88,25 @@ done
 sed -i 's|-| |g' "dateStamp.tmp"
 sed -i 's|:| |g' "timeStamp.tmp"
 
-# Combine in a files with 11 columns 
-paste "tiltAngles.tmp" "exposureTimes.tmp" "dateStamp.tmp" "timeStamp.tmp" > "combined.tmp"
-
-rm "tiltAngles.tmp"
-rm "exposureTimes.tmp"
-rm "dateStamp.tmp"
-rm "timeStamp.tmp"
+# Combine files for sorting by time stamp 
+paste "tiltAngles.tmp" "dateStamp.tmp" "timeStamp.tmp" > "combined.tmp"
 
 # shenanigans time
 # sort by all the date and time stamps
-# set per tilt-dose column
-sort -k3,3n -k4,4n -k5,5n -k6,6n -k7,7n -k8,8n "combined.tmp" | awk -v flux=$flux '{print $1,$2*flux}' > "combined_sorted.tmp"
-rm "combined.tmp"
-
-# Apply cumulative exposure at each tilt
-cmExp=0
-while read -r angle tiltExp
+counter=1
+while read -r angle stamp remainder
 do
-	cmExp=$(echo "scale = 5; ${tiltExp} + ${cmExp}" | bc)  
+	rounded_angle=$(printf "%0.1f" $angle)
+	echo "$counter,$rounded_angle"
+	((counter++))
+	
+done < <(sort -k2,2n -k3,3n -k4,4n -k5,5n -k6,6n -k7,7n "combined.tmp") > ${orderFile}
 
-	echo "${angle}	${cmExp}"
-
-done < "combined_sorted.tmp" > "outOfOrder.tmp"
-rm "combined_sorted.tmp"
-
-# Order by tilt angle
-sort -k1,1n "outOfOrder.tmp" > ${orderFile}
-rm "outOfOrder.tmp"
+# clean up
+rm "tiltAngles.tmp" 
+rm "dateStamp.tmp"
+rm "timeStamp.tmp"
+rm "combined.tmp"
 
 echo ""
 echo "Generated order file:	${orderFile}"
