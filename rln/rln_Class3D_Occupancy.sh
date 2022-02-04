@@ -51,7 +51,7 @@ if [[ $# == 0 ]] ; then
 fi
 
 # Parse arguements
-while getopts "c:d:l:h" options; do
+while getopts "c:d:l:h:" options; do
 	case "${options}" in
 
 		c)

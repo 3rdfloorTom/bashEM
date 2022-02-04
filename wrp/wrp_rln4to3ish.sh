@@ -97,27 +97,28 @@ fi
 outFile="${inStar%.*}_rln3ish_${pxSize}Apx_data.star"
 
 # Get field numbers for shifts
-oriX=$(grep "_rlnOriginX " ${inStar} | awk '{print $2}' | sed 's|#||')
-oriY=$(grep "_rlnOriginY " ${inStar} | awk '{print $2}' | sed 's|#||')
-oriZ=$(grep "_rlnOriginZ " ${inStar} | awk '{print $2}' | sed 's|#||')
-
 oriX_ang=$(grep "_rlnOriginXAngst" ${inStar} | awk '{print $2}' | sed 's|#||')
 oriY_ang=$(grep "_rlnOriginYAngst" ${inStar} | awk '{print $2}' | sed 's|#||')
 oriZ_ang=$(grep "_rlnOriginZAngst" ${inStar} | awk '{print $2}' | sed 's|#||')
 
+oriX=$(grep "_rlnOriginX " ${inStar} | awk '{print $2}' | sed 's|#||')
+oriY=$(grep "_rlnOriginY " ${inStar} | awk '{print $2}' | sed 's|#||')
+oriZ=$(grep "_rlnOriginZ " ${inStar} | awk '{print $2}' | sed 's|#||')
+
+
 tomo=$(grep "_rlnTomoName" ${inStar} | awk '{print $2}' | sed 's|#||')
 
 # Take all lines after match and divide angstrom shifts by pixel size before printing to new file
-sed -n '/^data_particles$/,$p' ${inStar} | awk -v oriX=$oriX \
-						 -v oriX_ang=$oriX_ang \
-						 -v oriY=$oriY \
+sed -n '/^data_particles$/,$p' ${inStar} | awk 	 -v oriX_ang=$oriX_ang \
 						 -v oriY_ang=$oriY_ang \
-						 -v oriZ=$oriZ \
 						 -v oriZ_ang=$oriZ_ang \
+						 -v oriX=$oriX \
+						 -v oriY=$oriY \
+						 -v oriZ=$oriZ \
 						 -v pxSize=$pxSize \
 						 -v tomo=$tomo \
-					 '{if ($0 ~ /.mrc/) {$oriX=$oriX_ang/pxSize ; $oriY=$oriY_ang/pxSize ; $oriZ=$oriZ_ang/pxSize; $tomo=$tomo".tomostar"; print $0} else print $0}' > ${outFile}
-
+						 '{if ($0 ~ /.mrc/) {$oriX=$oriX_ang/pxSize ; $oriY=$oriY_ang/pxSize ; $oriZ=$oriZ_ang/pxSize; $tomo=$tomo".tomostar"; print $0} else print $0}' > ${outFile}
+				
 # Edit some data loop and field names
 sed -i 's|data_particles|data_|' ${outFile}
 sed -i 's|_rlnTomoName|_rlnMicrographName|' ${outFile}

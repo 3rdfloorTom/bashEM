@@ -79,6 +79,11 @@ fieldNum=$(grep "_rln" ${inStar} | tail -n 1 | awk '{print $2}' | sed 's|#||')
 
 micField=$(grep "_rlnMicrographName" ${inStar} | awk '{print $2}' | sed 's|#||')
 
+# use TomoName if micrograph name is not present
+if [[ -z $micField ]] ; then
+	micField=$(grep "_rlnTomoName" ${inStar} | awk '{print $2}' | sed 's|#||')
+fi
+
 # Prepare header by grabbing all lines missing a reference to an image
 awk '{if ($0 !~ /.mrc/) {print $0}}' ${inStar} > ${outFile}
 # remove empty last line
