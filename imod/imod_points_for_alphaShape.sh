@@ -19,7 +19,7 @@ usage ()
 	echo ""
 	echo "options list:"
 	echo "		-i: tomogram to use for picking							(required)"
-	echo "		-o: rootname for output files (if different than input, e.g. 'volume_1')	(optional)"
+	echo "		-o: rootname for output files (if different than input, e.g. 'TS_001')		(optional)"
 	echo "		-v: display instructions in terminal (i.e., 'verbose' running)			(optional)"
 	echo ""
 	exit 0
