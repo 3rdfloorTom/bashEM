@@ -105,7 +105,6 @@ oriX=$(grep "_rlnOriginX " ${inStar} | awk '{print $2}' | sed 's|#||')
 oriY=$(grep "_rlnOriginY " ${inStar} | awk '{print $2}' | sed 's|#||')
 oriZ=$(grep "_rlnOriginZ " ${inStar} | awk '{print $2}' | sed 's|#||')
 
-
 tomo=$(grep "_rlnTomoName" ${inStar} | awk '{print $2}' | sed 's|#||')
 
 # Take all lines after match and divide angstrom shifts by pixel size before printing to new file
