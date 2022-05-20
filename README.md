@@ -27,12 +27,7 @@ done
 
 export PATH
 ```
-For, C-shell users add this to your .cshrc (?) <br/>
-```csh
-foreach dir ('/path/to/bashEM'/*)
-	set PATH=($dir:$PATH)
-end
-```
+For C-shell users, first, stop it and, second, feel free to tell me what the translation of the above is for a .cshrc  <br/>
 - Running of any (most?) scripts without any arguements should print out the usage (some better than others).
 
 
