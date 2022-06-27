@@ -20,11 +20,12 @@ usage ()
 	echo ""
 	echo "Usage is:"
 	echo ""
-	echo "$(basename $0) [-o numerical_offset] *.mdoc"
+	echo "$(basename $0) [-p naming_prefix] [-i starting_index] *.mdoc"
 	echo ""
 	echo "executed within directory containing the mdocs"
 	echo "options list:"
-	echo "	-o: offset to apply in renumbering files			(optional, default 0)"
+	echo "	-p: prefix for naming output files					(optional, default TS)"
+	echo "	-i: starting index to apply in renumbering files			(optional, default 1)"
 	echo ""
 	exit 0
 }
@@ -35,19 +36,31 @@ if [[ $# == 0 ]] ; then
 fi
 
 # defaults
-offset=0
+prefix="TS"
+index=1
 out_dir="renumbered_mdocs"
 key_list="mdoc_index_key.txt"
 
 #grab command-line arguements
-while getopts "o:" options; do
+while getopts "p:i:" options; do
     case "${options}" in
-        o)
+	p)
+            if [[ ! -z ${OPTARG} ]] ; then
+	  		prefix=${OPTARG}                    
+
+	    else
+		echo ""
+		echo "Using output prefix: ${prefix}_"
+		echo ""  
+	    fi	
+	    ;;
+
+        i)
             if [[ ${OPTARG} =~ ^[0-9]+$ ]] ; then
-           		offset=${OPTARG}
+           		index=${OPTARG}
             else
            		echo ""
-           		echo "Error: offset must be a positive integer."
+           		echo "Error: index must be a positive integer."
            		echo ""
            		usage
             fi
@@ -91,16 +104,16 @@ list_length=${#mdoc_list[@]}
 for ((i=0; i<${list_length}; i++)); do
 			
 	# prepare index
-	ts_index=$(printf "%03d" $offset)
+	ts_index=$(printf "%03d" $index)
 
 	# copy mdoc to new name in the output directory 
-	cp ${mdoc_list[$i]} $out_dir/"TS_${ts_index}.mdoc"
+	cp ${mdoc_list[$i]} $out_dir/"${prefix}_${ts_index}.mdoc"
 	
 	# store name mapping
-	echo "TS_${ts_index}.mdoc	${mdoc_list[$i]}"
+	echo "${prefix}_${ts_index}.mdoc	${mdoc_list[$i]}"
 	
-	# increment offset
-	((offset++))
+	# increment index
+	((index++))
 	
 # redirect mapping to file
 done > $out_dir/$key_list
