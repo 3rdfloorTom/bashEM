@@ -16,6 +16,8 @@ usage ()
 	echo "This scripts takes a particle.star with micrograph names following the SerialEM image-shift naming convention"
 	echo "It will output a particle.star assigning optics groups based on the unique image-shift groups."
 	echo ""
+	echo "NOTE: Assumes 1) SerialEM _X#+Y#-#-#.mrc file endings"
+	echo "		    2) Only one optics group named opticsGroup1 in the optics table"
 	echo ""
 	echo "It will output:	{input}_sem_OGs.star"
 	echo ""
@@ -107,6 +109,33 @@ ogArr=($(awk -v mic=$micField '($0 ~ /.mrc/) {n=split($mic,a,"_"); print a[n]}' 
 
 echo ""
 echo "Counted ${#ogArr[@]} unique optics groups"
+echo "Updating optics table entries based on parameters from opticsGroup1"
+echo ""
+
+# hard-check for first optics group line
+optics_line=$(grep opticsGroup1 ${outStar} | head -n 1)
+
+if [[ -z ${optics_line} ]] ; then
+
+	echo ""
+	echo "Error: opticsGroup1 was not found in the optics table!"
+	echo ""
+	usage
+
+fi
+
+# loop through and append new optics groups to table
+for (( i=2 ; i <= ${#ogArr[@]} ; i++)) 
+do
+	previous_group="opticsGroup"$((i-1))
+	next_line=$(echo $optics_line | awk -v i=$i '{ $1=i; $2=substr($2,0,length($2)-1)i; print $0}')
+
+	sed -i "/$previous_group/a $next_line" ${outStar}
+
+done
+
+echo ""
+echo "Optics table has been updated"
 echo "Proceeding to assigning optics groups"
 echo ""
 echo ""
@@ -152,12 +181,10 @@ END {
 ' ${inStar}
 
 echo ""
+echo "Finished assigning optics group to file:	${outStar}"
 echo ""
-echo "Finished assigning optics group to file:		${outStar}"
 echo ""
-echo ""
-echo "NOTE: You will need to edit the data_optics table manually to reflect the changes in the data_particles table...sorry!"
-echo "I have not figured out straight-foward way to replicate the data_optics entries yet to match the new optics groups."
+echo "NOTE: Make sure to check that the new optics table is correct."
 echo ""
 echo "Script done!"
 echo ""
