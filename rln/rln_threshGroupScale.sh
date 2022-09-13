@@ -135,19 +135,6 @@ if [[ -z $threshold_high ]] ; then
 	
 fi
 
-# Check that relative thresholds are sensible, otherwise swap
-if [[ $threshold_low -gt $threshold_high ]] ; then
-
-	echo ""
-	echo "Warning: The input lower threshold is greater than the higher threshold, swapping values..."
-	echo ""
-
-	tmp=$threshold_low
-	$threshold_low=$threshold_high
-	$threshold_high=$tmp
-
-fi
-
 # Check for appropriate metadata field
 if [[ -z $(grep "_rlnGroupScaleCorrection" ${in_modelStar}) ]] ; then
 
@@ -163,9 +150,8 @@ grpField=$(grep "_rlnGroupName" ${in_modelStar} | awk '{print $2}' | sed 's|#||'
 gscField=$(grep "_rlnGroupScaleCorrection" ${in_modelStar} | awk '{print $2}' | sed 's|#||')
 
 
-# Make array of group names with values between the thresholds
-removal_Arr=($(awk -v low=$threshold_low -v high=$threshold_high -v grp=$grpField -v gsc=$gscField '{if ($0 ~ /.mrc/ && $gsc > low && $gsc < high) {print $grp}}' ${in_modelStar} ))
-
+# Make array of groups to be removed
+removal_Arr=($(awk -v low=${threshold_low} -v high=${threshold_high} -v grp=${grpField} -v gsc=${gscField} '{if ($0 ~ /.mrc/ && ($4 < low || $4 > high)) {print $2}}' ${in_modelStar} | sed '1d' | sed '/^$/d' ))
 
 echo ""
 echo "There are ${#removal_Arr[@]} micrographs marked for removal."
@@ -174,14 +160,16 @@ echo "Now performing removal"
 echo ""
 
 # copy input particle.star to output particle.star
-out_pctlStar=${in_pctlStar%.star}_gsc_thresh.inStar
+out_pctlStar=${in_pctlStar%.star}_gsc_thresh.star
 cp ${in_pctlStar} ${out_pctlStar}
 
-# remove lines containing group name
-for group in "${removal_Arr[@]}"
-do
 
-	sed -i "|$group|d" ${out_pctlStar}
+# remove lines containing group name
+for (( i = 1; i < ${#removal_Arr[@]} ; i++))
+do
+	echo "Removing: ${removal_Arr[$i]}"	
+	grep -Fv ${removal_Arr[$i]} ${out_pctlStar} > tmp.star
+	mv tmp.star ${out_pctlStar}
 
 done
 
