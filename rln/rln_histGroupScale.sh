@@ -13,7 +13,7 @@
 usage () 
 {
 	echo ""
-	echo "This scripts plots a histogram of the MaxValueProbDistribution from a coordinate star file"
+	echo "This scripts plots a histogram of the GroupScaleCorrection from a model star file"
 	echo ""
 	echo "It uses gnuplot for plotting and Eye of Gnome for display of the histogram at the end."
 	echo ""
@@ -80,47 +80,44 @@ if [[ -z $inStar ]] ; then
 	
 fi
 
-if [[ -z $(grep "_rlnMaxValueProbDistribution" ${inStar}) ]] ; then
+if [[ -z $(grep "_rlnGroupScaleCorrection" ${inStar}) ]] ; then
 
 	echo ""
-	echo "Error: Input file does not contain a _rlnMaxValueProbDistribution column...not much to do here."
+	echo "Error: Input file does not contain a _rlnGroupScaleCorrection column...are you sure this in a run_model.star?"
 	echo "Exiting..."
 	echo ""
 	usage
 fi
 
 # Give output a name
-outFile="${inStar%.*}_mvpd.dat"
+outFile="${inStar%.*}_gsc.dat"
 
-# Get FOM field
-mvpdField=$(grep "_rlnMaxValueProbDistribution" ${inStar} | awk '{print $2}' | sed 's|#||')
+# Get field of interest
+gscField=$(grep "_rlnGroupScaleCorrection" ${inStar} | awk '{print $2}' | sed 's|#||')
 
 # Sort data lines based on autopick FOM
-awk -v mvpd=$mvpdField '{if ($0 ~ /.mrc/) {print $mvpd}}' ${inStar} | sort -nr > ${outFile}
+awk -v gsc=$gscField '{if ($0 ~ /.mrc/) {print $gsc}}' ${inStar} | sort -nr > ${outFile}
 
+# First line of .mrc references the map reference
+sed -i -e "1d" ${outFile}
 count=$(wc -l ${outFile} | awk '{print $1}')
+
 echo ""
-echo "There are coordinates for $count particles."
+echo "There are values for $count micrographs."
 echo ""
 
 echo ""
 echo "Now preparing binned data for histogram..."
 echo ""
 
-# Get histogram parameters
-xmin=$(tail -n 1 ${outFile})
-xmax=$(head -n 1 ${outFile})
-#bins=$(echo "scale = 2; ($xmax - $xmin)*$fineness " | bc)
-#width=$(echo "scale = 2; ($xmax - $xmin)/$bins" | bc)
-
 # File for plotting
-histfile=${inStar%.*}_mvpd.hist
+histfile=${inStar%.*}_gsc.hist
 
 if [[ -f $histfile ]] ; then
 	rm $histfile
 fi
 
-awk -v xmin=$xmin -v xmax=$xmax -v bins=100 -v width=0.01 -v histfile=$histfile '
+awk -v xmin=0 -v xmax=2 -v bins=200 -v width=0.01 -v histfile=$histfile '
 BEGIN {
 
 # set up arrays
@@ -179,13 +176,13 @@ set border 4095
 
 set xtics 0.5 rotate by 60 right nomirror
 set grid xtics
-set xtics 0,0.1,1
+set xtics 0,0.05,2
 
 set size ratio 0.5
 set terminal pngcairo noenhanced font "arial,10" fontscale 1.0
 set output "${outFile%.*}_histogram.png"
 
-set title "Histogram of MaxValueProbDistribution: \n ${inStar}"
+set title "Histogram of GroupScaleCorrection: \n ${inStar}"
 set ylabel "Counts"
 set xlabel "bins"
 
