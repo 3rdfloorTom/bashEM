@@ -55,7 +55,7 @@ else
   
   #Make file with names of model.star in order of iteration (really time of creation) within specified range
   
-  ls -rtl *optimiser.star | awk '{print $9}'| head -n "$((xhigh+2))" | tail -n +"$((xlow+1))" > optiFiles.txt
+  ls -rtl *optimiser.star | awk '{print $NF}'| head -n "$((xhigh+2))" | tail -n +"$((xlow+1))" > optiFiles.txt
 
 
   #Remove exisiting optimal.dat if present
@@ -64,7 +64,7 @@ else
   fi  
 
   #Print the raw class occupancy data to terminal and store info in optimal.dat
-  for i in `cat optiFiles.txt`
+  for i in $(cat optiFiles.txt)
   do
 	grep _rlnChangesOptimalClasses $i | awk '{print $2}'
 	grep _rlnChangesOptimalClasses $i | awk '{print $2}' >> optimal.dat
