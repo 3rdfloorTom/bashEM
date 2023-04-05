@@ -16,6 +16,8 @@ usage ()
 	echo "Renumber mdoc files with 0-padded numbering with a given offset."
 	echo "also, write out a list file with key mapping of old names to new numbers"
 	echo ""
+	echo "EXTRA: The script was also change a 4-digit year DateTime to 2-digit for compatibility with warp-v1.09"
+	echo ""
 	echo "All output is written to separate directory: renumbered_mdocs"
 	echo ""
 	echo "Usage is:"
@@ -107,7 +109,7 @@ for ((i=0; i<${list_length}; i++)); do
 	ts_index=$(printf "%03d" $index)
 
 	# copy mdoc to new name in the output directory 
-	cp ${mdoc_list[$i]} $out_dir/"${prefix}_${ts_index}.mdoc"
+	awk '{ if ( $1 == "DateTime" && length($3) > 9 ) {$3=substr($3,0,length($3)-4)substr($3,length($3)-1,length($1)); print $0} else {print $0} }' ${mdoc_list[$i]} > $out_dir/"${prefix}_${ts_index}.mdoc"
 	
 	# store name mapping
 	echo "${prefix}_${ts_index}.mdoc	${mdoc_list[$i]}"
@@ -117,6 +119,8 @@ for ((i=0; i<${list_length}; i++)); do
 	
 # redirect mapping to file
 done > $out_dir/$key_list
+
+
 
 echo ""
 echo "Finished renaming!"
