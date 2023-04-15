@@ -18,7 +18,8 @@ echo ""
 echo "***************************************************************************************************************"
 
 # Default file locations
-accessories_path="../misc"
+script_dir=$(dirname $0)
+accessories_path=${script_dir%/wrp}/misc
 adoc_template="patch_tracking.adoc"
 	
 	# align.com generated from default directive
@@ -36,11 +37,11 @@ patch_size_X=340
 patch_size_Y=340
 
 # Defaults for automated patch-tracking for etomo
-target_residual=0.5
+target_residual=2
 min_points=7
 
 # log file location
-log_file="${imod_dir}/batch_patch.log"
+#log_file=${imod_dir}/batch_patch.log
 
 ## functions
 prepare_etomo_dir()
@@ -49,11 +50,14 @@ prepare_etomo_dir()
 
 	# Hide pre-existing session if it exists
 	if [[  -f "${ts_name}.edf" ]] ; then
-			mv "${ts_name}.edf" "${ts_name}.edf.bak"
+		mv "${ts_name}.edf" "${ts_name}.edf.bak"
 	fi
 	
+	dim_X=$(header -size ${ts_name}.st | awk '{print $1}')
+	dim_Y=$(header -size ${ts_name}.st | awk '{print $2}')
+
 	# Make adoc file for this tilt-series then add the defaults from the template adoc file
-	echo "setupset.copyarg.name=${ts_name}.st" > "${ts_name}_directive.adoc"
+	echo "setupset.copyarg.name=${ts_name}" > "${ts_name}_directive.adoc"
 	cat "${accessories_path}/${adoc_template}" >> "${ts_name}_directive.adoc"	
 
 	# Change patch size for tracking if binning differs from default
@@ -63,10 +67,13 @@ prepare_etomo_dir()
 	fi
 	
 	# Default patches for K2 binned to 7-12 A/px seems to work well	
-	sed -i "s|SizeOfPatchesXandY=340,340|SizeOfPatchesXandY=${patchX},${patchY}|" "${ts_name}_directive.adoc"
-	    
+	sed -i "s|SizeOfPatchesXandY=340,340|SizeOfPatchesXandY=${patch_size_X},${patch_size_Y}|" "${ts_name}_directive.adoc"	    
+
 	# Set directive	
-	etomo --directive "${ts_name}_directive.adoc"
+	etomo --directive "${ts_name}_directive.adoc" --namingstyle 0
+
+	# adjust newstack for the current image dimensions
+		sed -i "s|SizeToOutputInXandY.*|SizeToOutputInXandY	${dim_Y},${dim_X}|" newst.com	
 
 		# Run automated patch-tracking alignment based on Vinson and Digvjay's script
 
@@ -121,7 +128,7 @@ patch_track()
 	alignlog -w > ${ts_name}_taRobust.log
 	alignlog -s > ${ts_name}_taSolution.log
 
-	model2point -c -ob -fl -i ${ts_name}.fid -ou ${ts_name}_fid.pt	 #convert imod model to a points list for easy editing
+	model2point -c -ob -inp ${ts_name}.fid -ou ${ts_name}_fid.pt	 #convert imod model to a points list for easy editing
 	mv ${ts_name}.fid ${ts_name}.fid.orig #archive original fiducial model
 	cp ${ts_name}_fid.pt ${ts_name}_fid.pt.orig #archive initial points list model
 
@@ -168,6 +175,7 @@ patch_track()
 	if [[ -f "FAIL.log" ]] ; then
 		return 0
 	else
+		submfg newst.com
 		touch "SUCCESS.log"
 		return 1
 	fi
@@ -177,10 +185,7 @@ patch_track()
 reconstruct_tomo()
 {
 	# indexed starting at 1
-	local gpu_id=$1
 	local tomo_name=$(grep "OutputFile" | awk '{print $2}')
-
-	sed -i "s|UseGPU 0|UseGPU $gpu_id|" tilt.com
 
 	submfg tilt.com
 	trimvol -rx ${tomo_name} ${tomo_name%_full_rec.mrc}_rec.mrc
@@ -190,34 +195,39 @@ reconstruct_tomo()
 align_tiltseries()
 {
 	local ts_name=$(basename $1)
-	local ts_dir=$(dirname $1)
+	local ts_dir=$1
 	local ts_mdoc=$2
-	local gpu_id=$3
-
+	
+	
 	cd ${ts_dir}
-
+	
+	if [[ -f SUCCESS.log ]] ; then
+		echo "This tilt-series is already aligned. Skipping...."
+		return
+	fi
+		
 	# sanitize mdoc
 	dos2unix ${ts_mdoc}
-
+	
 	# check for tilt-axis rotation in the extended header
 	# and add it to the header if not present
-	if [[ -z $(header ${ts_name}.st | grep "Tilt axis angle") ]]
+	if [[ -z $(header ${ts_name}.st | grep "Tilt axis angle") ]] ; then
 
-		alterheader -title $(grep "Tilt axis angle" "${ts_mdoc}") "${ts_name}.st"
+		alterheader -title "$(grep "Tilt axis angle" ${ts_mdoc})" ${ts_name}.st
 	
 	fi
 
 	# write directive and com script
-	prepare_etomo_dir() ${ts_name}
+	prepare_etomo_dir ${ts_name}
 
 	# perform iterative patch-tracking routine to achieve residual threshold
-	patch_track() ${ts_name}
-	alignment_successful=$?
+	patch_track ${ts_name}
+	#alignment_successful=$?
 
 	# If alignment was successful, then reconstruct tomogram at bin 8 by WBP
-	if [[ ${alignment_successful} -eq 1 ]]; then
-		reconstruct_tomo() ${gpu_id}
-	fi
+	#if [[ ${alignment_successful} -eq 1 ]]; then
+	#	reconstruct_tomo ${gpu_id}
+	#fi
 
 	return
 
@@ -228,18 +238,20 @@ align_tiltseries()
 usage () 
 {
 	echo ""
-	echo "Usage is $(basename $0) -i <imod directory> -m <mdoc directory> [optional arguments]"
+	echo "Usage is:"
 	echo ""
-	echo "-i: Path to Warp's imod directory							(required)"
-	echo "-m: Path to directory containing cognate .mdoc files		(required)"
+	echo "	 $(basename $0) -i <imod directory> -m <mdoc directory> [optional arguments]"
 	echo ""
-	echo "-a: Path to accessories files								(optional)"
-	echo "-d: Name of .adoc template file in accessories			(optional)"
-	echo "-r: Target residual for alignment	(in nm)					(optional, default=0.5)"
-	echo "-n: Minimum number of tracked points						(optional, default=7)"
-	echo "-b: Binning for coarse alignment							(optional, default=2)"
-	echo "-x: Patch size in X for patch-tracking					(optional, default=340)"
-	echo "-y: Patch size in Y for patch-tracking					(optional, default=340)"
+	echo "	-i: Path to Warp's imod directory				(required)"
+	echo "	-m: Path to directory containing cognate .mdoc files		(required)"
+	echo ""
+	echo "	-a: Path to accessories files					(optional)"
+	echo "	-d: Name of .adoc template file in accessories			(optional)"
+	echo "	-r: Target residual for alignment (in nm)			(optional, default=0.5)"
+	echo "	-n: Minimum number of tracked points				(optional, default=7)"
+	echo "	-b: Binning for coarse alignment				(optional, default=2)"
+	echo "	-x: Patch size in X for patch-tracking				(optional, default=340)"
+	echo "	-y: Patch size in Y for patch-tracking				(optional, default=340)"
 	exit 0
 
 } ## close usage
@@ -270,7 +282,7 @@ while getopts ":i:m:a:d:r:n:b:x:y:" options; do
            		usage
             fi
             ;;
-		m)
+	m)
 	    if [[ -d ${OPTARG} ]] ; then
            		mdoc_dir=$(realpath ${OPTARG} )
             else
@@ -281,6 +293,7 @@ while getopts ":i:m:a:d:r:n:b:x:y:" options; do
            		usage
             fi
             ;;       
+
         a)
             if [[ -d ${OPTARG} ]] ; then
            		accessories_path=${OPTARG}
@@ -334,22 +347,22 @@ while getopts ":i:m:a:d:r:n:b:x:y:" options; do
             ;;
       	x)
             if [[ ${OPTARG} =~ ^[0-9]+$ ]] ; then
-           		patchX=${OPTARG}
+           		patch_size_X=${OPTARG}
             else
            		echo ""
            		echo "Error: patch size for X must be a positive value."
-           		echo "defaulting to use of ${patchX}"
+           		echo "defaulting to use of ${patch_size_X}"
            		echo ""
             fi
             ;;
 	
       	y)
             if [[ ${OPTARG} =~ ^[0-9]+$ ]] ; then
-           		patchY=${OPTARG}
+           		patch_size_Y=${OPTARG}
             else
            		echo ""
            		echo "Error: patch size for Y must be a positive value."
-           		echo "defaulting to use of ${patchY}"
+           		echo "defaulting to use of ${patch_size_Y}"
            		echo ""
             fi
             ;;
@@ -378,12 +391,7 @@ elif [[ -z "$(ls -A ${mdoc_dir})" ]] ; then
 
 else
 
-	# prepare log file header
-	if ! [[ -f "{$log_file}" ]] ; then
-		printf '\n'
-	fi
 
-	# 
 	declare -a tiltseries_array
 	declare -a mdoc_array
 
@@ -391,7 +399,10 @@ else
 	# compose arrays for TS which are to be aligned
 	for TS in "${imod_dir}"/* 
 	do
-
+		if ! [[ -d $TS ]] ; then
+			continue 
+		fi
+	
 		ts_name=$(basename $TS)
 		ts_mdoc="${mdoc_dir}/${ts_name}.mdoc"
 
@@ -402,33 +413,57 @@ else
 			echo "Skipping..."
 			echo ""
 
-			## print to log file
-			printf '\n'
 			continue
 		fi
 
 		# add TS to array for alignment
-		tiltseries_array+=(($TS));
-		mdoc_array+=(($ts_mdoc))
-
+		tiltseries_array+=(${TS});
+		mdoc_array+=(${ts_mdoc})
 	done
 
 
-	# crude batch parallel
+
+	# crude batch
 	for (( TS=0 ; TS < "${#tiltseries_array[@]}" ; TS++ ))
 	do
 
 		ts_name=${tiltseries_array[$TS]}
 		ts_mdoc=${mdoc_array[$TS]}
    		
-   		((gpu=gpu%${gpu_count})) ; ((gpu++==0)) && wait
-	
-		gpu_id=$gpu
-
-		echo ""
+   		echo ""
 		echo "Aligning $(basename $ts_name)"
 		echo ""
 
-		align_tiltseries() ${ts_name} ${ts_mdoc} ${gpu_id}
+		align_tiltseries ${ts_name} ${ts_mdoc}
 
 	done
+	
+	log_file=${imod_dir}/batchpatch.log
+
+	printf "%-s	%s	%s\n" "Tilt-series" "Status" "Residual (nm)" > ${log_file}
+	
+	for (( TS=0 ; TS < "${#tiltseries_array[@]}" ; TS++ ))
+	do
+		ts_dir=${tiltseries_array[$TS]}
+		ts_name=$(basename ${ts_dir})
+
+		if [[ -f ${ts_dir}/SUCCESS.log ]] ;then
+			alignment="success"
+			residual=$(grep "weighted mean" ${ts_dir}/*_taRobust.log | awk '{print $5}')
+		else
+			alignment="fail"
+			residual="N/A"
+		fi
+		
+		printf "%-s     %s      %s\n" $ts_name $alignment $residual >> ${log_file}
+	done
+
+fi
+
+echo ""
+echo "Script done!"
+echo ""
+echo "Results have been written out to ${log_file}"
+echo ""
+
+
