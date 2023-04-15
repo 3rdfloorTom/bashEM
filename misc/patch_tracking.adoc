@@ -1,3 +1,4 @@
+setupset.copyarg.stackext=st
 setupset.copyarg.gold=0
 setupset.copyarg.dual=0
 setupset.scanHeader=1
