@@ -37,7 +37,11 @@ patch_size_X=340
 patch_size_Y=340
 
 # Defaults for automated patch-tracking for etomo
+<<<<<<< HEAD:wrp/wrp_batchPatch_imod_v2.sh
 target_residual=2
+=======
+target_residual=0.5	# in nm
+>>>>>>> f4ba299 (minor changes):wrp/wrp_batchPatch_imod_v2
 min_points=7
 
 # log file location
@@ -157,7 +161,7 @@ patch_track()
 	 else
 	    echo "Insufficient remaining points: FAIL" >> ${ts_name}_edit_fiducial.log
 	    echo "Insufficient remaining points" > FAIL.log
-	    break
+	    break	# end loop upon failure
 	 fi
 		 point2model -op -ci 5 -w 2 -im ${ts_name}.preali -in ${ts_name}_fid.pt -ou ${ts_name}.fid
 		 dd if=${accessories_path}/fid_header.bin of=${ts_name}.fid bs=1 count=136 conv=notrunc #change if= to point to fid_header.bin where ever it is. This is some voodoo hex magic because the header contains contour information.
@@ -188,9 +192,25 @@ reconstruct_tomo()
 	local tomo_name=$(grep "OutputFile" | awk '{print $2}')
 
 	submfg tilt.com
-	trimvol -rx ${tomo_name} ${tomo_name%_full_rec.mrc}_rec.mrc
+	trimvol -rx ${tomo_name} ${tomo_name%_full_rec.mrc}_rec.mrc # rotate about X
 
 } # close reconstruct_tomo()
+
+print_to_log()
+{
+	local ts_name=$1
+
+	if [[ -f "SUCCESS.log" ]] ; then
+		alignment_status='success'
+		mean_residual=$(grep 'weighted mean' ${ts_name}_taRobust.log | awk '{print $5}')
+	else
+		alignment_status='failed'
+		mean_residual='N/A'
+	fi
+
+	printf "%-s %-s %-s\n" ${ts_name} ${alignment_status} ${mean_residual} >> ${log_file}
+
+} # close print_to_log()
 
 align_tiltseries()
 {
@@ -228,6 +248,8 @@ align_tiltseries()
 	#if [[ ${alignment_successful} -eq 1 ]]; then
 	#	reconstruct_tomo ${gpu_id}
 	#fi
+
+	print_to_log() ${ts_name}
 
 	return
 
@@ -391,6 +413,13 @@ elif [[ -z "$(ls -A ${mdoc_dir})" ]] ; then
 
 else
 
+<<<<<<< HEAD:wrp/wrp_batchPatch_imod_v2.sh
+=======
+	# prepare log file header
+	if ! [[ -f "${log_file}" ]] ; then
+		printf "%-s %-s %s\n" 'tilt-series' 'Status' 'Mean residual (nm)'
+	fi
+>>>>>>> f4ba299 (minor changes):wrp/wrp_batchPatch_imod_v2
 
 	declare -a tiltseries_array
 	declare -a mdoc_array
