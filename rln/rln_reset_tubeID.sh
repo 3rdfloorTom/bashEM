@@ -26,7 +26,7 @@ usage ()
 	echo "$(basename $0) -i particles.star"
 	echo ""
 	echo "options list:"
-	echo "	-i: particle.star containing rln_MicrographName and rlnHelicalTubeID fields			(required)"
+	echo "	-i: particle.star containing _rlnMicrographName and _rlnHelicalTubeID fields			(required)"
 	echo ""
 	exit 0
 }
