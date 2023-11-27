@@ -216,7 +216,11 @@ print_array "${extend_array[@]}"
 echo -n "Soft-edge extensions:"
 print_array "${softedge_array[@]}"
 echo ""
-echo "Making masks and applying them..."
+
+# Count total masks to be made to use for counter printed to stdout
+total_count=$(( ${#threshold_array[@]} * ${#extend_array[@]} * ${#softedge_array[@]} ))
+running_count=0
+echo "Making masks and applying for ${total_count} parameter combinations." 
 # perform actual mask making
 for threshold in "${threshold_array[@]}"
 do
@@ -225,18 +229,15 @@ do
 		for softedge in "${softedge_array}"
 		do
 			mask_name=$masks_out_dir/$(basename $mask_template .mrc)_i${threshold#0.}e${extend}s${softedge}.mrc
-			echo ""
-			echo "Making $mask_name"
 			rln_mask_create $threshold $extend $softedge $mask_name 1> /dev/null 2> /dev/null
 
 			pp_dir1=$postprocess_out_dir/$(basename $mask_name .mrc)
 			mkdir -p $pp_dir1
 
 			pp_dir2=$pp_dir1/$(basename $mask_name .mrc)_postprocess
-			echo "Applying $mask_name"
 			rln_postprocess $mask_name $pp_dir2 1> /dev/null 2>/dev/null
 
-		echo "Finished $mask_name"
+		echo "Finished $mask_name mask $((++running_count)) of ${total_count}"
 		done # softedge loop
 	done # extend for-loop
 done # threshold for-loop
@@ -244,6 +245,6 @@ done # threshold for-loop
 echo ""
 echo "Wrote out all masks to $masks_out_dir"
 echo "Wrote out postprocess jobs to sub-directories within $postprocess_out_dir containing the cognate mask name."
-echo "Check out the logfile.pdf (with something like evince) in each postprocess job to assess the bias of each mask."
+echo "Check out the logfile.pdf (with something like evince or okular) in each postprocess job to assess the bias of each mask."
 echo "Done!"
 echo ""
