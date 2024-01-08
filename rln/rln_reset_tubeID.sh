@@ -117,12 +117,13 @@ BEGIN {
 			counter=1 	# reset counter for new micrographs
 		}
 
+		# increment and shift all tracking variables
+		$tubeField=counter
+		micname_prev=micname_current
+		tubeID_prev=tubeID_current
+
 	} # close if
 	
-	$tubeField=counter
-	micname_prev=micname_current
-	tubeID_prev=tubeID_current
-
 	print $0
 	
 } # close file operation
