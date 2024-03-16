@@ -109,7 +109,7 @@ for ((i=0; i<${list_length}; i++)); do
 	ts_index=$(printf "%03d" $index)
 
 	# copy mdoc to new name in the output directory 
-	awk '{ if ( $1 == "DateTime" && length($3) > 9 ) {$3=substr($3,0,length($3)-4)substr($3,length($3)-1,length($1)); print $0} else {print $0} }' ${mdoc_list[$i]} > $out_dir/"${prefix}_${ts_index}.mdoc"
+	awk '{ if ( $1 == "DateTime" && length($3) > 9 ) {$3=substr($3,0,length($3)-4)substr($3,length($3)-1,length($1))" "; print $0} else {print $0} }' ${mdoc_list[$i]} > $out_dir/"${prefix}_${ts_index}.mdoc"
 	
 	# store name mapping
 	echo "${prefix}_${ts_index}.mdoc	${mdoc_list[$i]}"
